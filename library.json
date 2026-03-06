@@ -1,0 +1,31 @@
+{
+  "name": "LT7381",
+  "version": "0.1.0",
+  "description": "Driver for LT7381 mcu that drives among others the ER-TFT-MC070-4 display from buydisplay.com. The LT7381 is similar to the LT768x family that is a clone of the RA8876 (I think. Just mentioning because they might be compatible, no tested though). This lib is built to rely on esp-idf's esp_lcd and an example is given to use with LVGL.\n\nhttps://www.buydisplay.com/low-cost-arduino-7-inch-touch-screen-800x480-i2c-lcd-tft-spi-display\n\nhttps://www.levetop.cn/uploadfiles/2023/05/LT7381_BFDS_V11_ENG.pdf\n\nThanks to danmeuk for https://github.com/danmeuk/esp_lcd_ra8876",
+  "keywords": ["tft", "display", "lt7381", "spi", "parallel"],
+  "authors": [
+    {
+      "name": "Picsiri"
+    }
+  ],
+  "repository":
+  {
+    "type": "git",
+    "url": ""
+  },
+  "headers": "ER_TFT.h",
+  "examples": [
+    {
+        "name": "Showcase",
+        "base": "examples/esp32-s3",
+        "files": [
+            "platformio.ini",
+            "src/main.hpp",
+            "src/main.cpp"
+        ]
+    }
+  ],
+  "frameworks": ["arduino", "espidf"],
+  "platforms": ["espressif32"],
+  "exclude": []
+}
