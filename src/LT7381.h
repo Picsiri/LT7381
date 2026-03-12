@@ -1,15 +1,5 @@
 #pragma once
 
-#include "esp_lcd_panel_interface.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_panel_vendor.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_lcd_panel_commands.h"
-#include "driver/gpio.h"
-#include "hal/ledc_types.h"
-#include "LT7381_Registers.h"
-//#include "sdkconfig.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
