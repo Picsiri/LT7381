@@ -27,5 +27,12 @@
   ],
   "frameworks": ["arduino", "espidf"],
   "platforms": ["espressif32"],
+  "dependencies": [
+    {
+        "name": "esp_lcd",
+        "version": "*",
+        "platforms": ["espressif32"]
+    }
+  ],
   "exclude": []
 }

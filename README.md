@@ -1,17 +1,10 @@
-# LT7381 Display Driver
+# Overview
 
-Driver library for the **LT7381 display controller** used in TFT modules such as:
-
-ER-TFT-MC070-4  
-https://www.buydisplay.com/low-cost-arduino-7-inch-touch-screen-800x480-i2c-lcd-tft-spi-display
+Driver library for the **LT7381 display controller** used in TFT modules such as: **ER-TFT-MC070-4**
 
 The LT7381 controller is similar to the LT768x family, which itself is very close in architecture to the RA8876 controller.
 
 This library provides a clean and documented driver implementation designed for ESP32 platforms using the ESP-IDF `esp_lcd` subsystem.
-
----
-
-# Overview
 
 This library was created primarily to support the **ER-TFT-MC070-4 display module**, but it may also work with other displays using the same LT7381 controller.
 
@@ -23,8 +16,6 @@ Key design choices:
 - Designed to integrate easily with LVGL
 - Clean and well documented driver implementation
 - PlatformIO friendly
-
----
 
 # Hardware Support
 
@@ -42,8 +33,6 @@ The LT7381 is closely related to:
 
 Because of this similarity, the library **may work with other LT768x / RA8876 based displays**, but this has **not been tested yet**.
 
----
-
 # Interfaces
 
 This library relies on the **esp_lcd interface layer**.
@@ -57,8 +46,6 @@ Because of this, the display can theoretically be used over:
 However:
 
 **Only SPI has been tested so far.**
-
----
 
 # Software Architecture
 
@@ -94,13 +81,15 @@ PlatformIO example projects included:
 Using PlatformIO:
 
 ```
-
 lib_deps =
-[https://github.com/](https://github.com/)<your-repo>/LT7381
-
+[https://github.com/](https://github.com/)Picsiri/LT7381
 ```
 
----
+or via PIO repository:
+
+```
+asdasd
+```
 
 # References
 
@@ -113,10 +102,7 @@ https://www.levetop.cn/uploadfiles/2023/05/LT7381_BFDS_V11_ENG.pdf
 Special thanks to danmeuk. Used his repo as reference:  
 https://github.com/danmeuk/esp_lcd_ra8876
 
-
-
 # Pin Configuration
-
 
 I have used an ESP-S3 based module:   
 https://github.com/vcc-gnd/YD-ESP32-S3?tab=readme-ov-file
@@ -130,10 +116,11 @@ SPI wiring:
 |-----|---------|---------|-----|
 | GND |   GND   |   GND   | 1,2 |
 | VCC |   VCC   |   VCC   | 3,4 |
-| 11  |   MOSI  |   SDI   |  7  |
-| 13  |   MISO  |   SDO   |  6  |
-| 12  |   SCLK  |   SCK   |  8  |
 | 10  |   CS    |   CS    |  5  |
+| 13  |   MISO  |   SDO   |  6  |
+| 11  |   MOSI  |   SDI   |  7  |
+| 12  |   SCLK  |   SCLK  |  8  |
+| xx  |   WAIT  |   WAIT  |  9  |
 | 16  |   RST   |  RESET  |  11 |
 | xx  |   PWM   |  BL_PWM |  14 |
 
@@ -143,16 +130,9 @@ SPI wiring:
 
 Resolution: 800x480  
 Color depth: RGB565  
+Frames per sec: ?  
 
 Typical SPI configuration:
 
 SPI clock: <insert> MHz  
 Flush time: <insert> ms
-
----
-
-# Known Issues
-
-- Only SPI interface tested
-- Touch controller not supported yet
-
