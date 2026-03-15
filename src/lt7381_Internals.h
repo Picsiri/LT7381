@@ -1,6 +1,13 @@
 #pragma once
 
-#include "LT7381_Registers.h"
+/* include user config if available */
+#if __has_include("lt7381_config.h")
+#include "lt7381_config.h"
+#else
+#include "lt7381_config_default.h"
+#endif
+
+#include "lt7381_Registers.h"
 #include <stdlib.h>
 
 #include "esp_lcd_panel_interface.h"
@@ -13,14 +20,15 @@
 #include "driver/gpio.h"
 #include "hal/ledc_types.h"
 #include "freertos/task.h"
+#include "freertos/FreeRTOS.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define LT7381_TIMEOUT_US     (30 * 1000)          /* How long to wait for panel operations (in uS) */
+#define LT7381_TIMEOUT_US     (30 * 1000)        /* How long to wait for panel operations (in uS) */
 
-#define PRINT_TAG             "LT7381"
+#define PRINT_TAG             "LT7381_driver"
 
 /**
  * @brief 
@@ -44,12 +52,18 @@ typedef struct {
   uint16_t                      backlight_duty;  /* backlight level (16-bit integer) */
 } lt7381_panel_t;
 
+static esp_err_t lt7381_status_read(lt7381_panel_t *lt, uint8_t *status);
+static esp_err_t lt7381_pll_init(esp_lcd_panel_t *panel);
+static esp_err_t lt7381_sdram_init(esp_lcd_panel_t *panel);
+static esp_err_t lt7381_tft_panel_setting(esp_lcd_panel_t *panel, uint8_t setting);
+static esp_err_t lt7381_bus_width_setting(esp_lcd_panel_t *panel, uint8_t setting);
 
+static esp_err_t lt7381_system_wait_ready(esp_lcd_panel_t *panel);
 static void panel_lt7381_wait(esp_lcd_panel_t *panel);
 static esp_err_t panel_lt7381_tx_param(esp_lcd_panel_t *panel, int lcd_cmd, uint8_t param);
 static void panel_lt7381_set_window(esp_lcd_panel_t *panel, int x_start, int y_start, int x_end, int y_end);
 static void panel_lt7381_set_cursor(esp_lcd_panel_t *panel, int x_start, int y_start, int x_end, int y_end);
-static esp_err_t panel_lt7381_check(void);
+
 
 
 

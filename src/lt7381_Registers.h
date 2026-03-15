@@ -11,22 +11,59 @@ extern "C" {
 // SPI Command bytes (4-wire SPI)
 
 // A0=0, RW#=0 - write register address
-#define LT7381_CMD_WRITE_COMMAND              0x00
+#define LT7381_CMD_WRITE_COMMAND        0x00
 // A0=0, RW#=1 - read status register data
-#define LT7381_CMD_READ_STATUS                0x40
+#define LT7381_CMD_READ_STATUS          0x40
 
 // A0=1, RW#=0 - write data to address
-#define LT7381_CMD_WRITE_DATA                 0x80
+#define LT7381_CMD_WRITE_DATA           0x80
 // A0=1, RW#=1 - read data from address
-#define LT7381_CMD_READ_DATA                  0xC0
+#define LT7381_CMD_READ_DATA            0xC0
 
+/* ------------------------------- */
+/* - Register Fields Description - */
+/* ------------------------------- */
+
+#define BIT_TO_VAL(bit_pos)             (1u<<(uint8_t)(bit_pos))
+#define GET_BIT(byte, bit_pos)          ((uint8_t)(byte) & BIT_TO_VAL(bit_pos))
+#define BIT(n)                          (1U << (n))
+#define SET_BIT(x, n)                   ((x) |= BIT(n))
+#define CLEAR_BIT(x, n)                 ((x) &= ~BIT(n))
+
+/* Status Register */
+#define STAT_REG_WRITE_MEMORY_FULL_BIT  0x07
+#define STAT_REG_WRITE_MEMORY_EMPTY_BIT 0x06
+#define STAT_REG_READ_MEMORY_FULL_BIT   0x05
+#define STAT_REG_READ_MEMORY_EMPTY_BIT  0x04
+#define STAT_REG_CORE_TASK_BUSY_BIT     0x03
+#define STAT_REG_DISPLAY_RAM_READY_BIT  0x02
+#define STAT_REG_INHIBIT_OPERATION_BIT  0x01
+#define STAT_REG_INTERRUPT_ACTIVE_PIN   0x00
+
+/* Chip Configuration Register */
+#define CCR_REG_PLL_READY_BIT           0x07
+#define CCR_REG_MASK_WAIT_STATE_BIT     0x06
+#define CCR_REG_KEYPAD_SCAN_ENABLE_BIT  0x05
+#define CCR_REG_PANEL_IF_SETTING_LOW    0x04
+#define CCR_REG_PANEL_IF_SETTING_HIGH   0x03
+#define CCR_REG_I2C_MASTER_ENABLE_BIT   0x02
+#define CCR_REG_SPI_INTERFACE_ENA_BIT   0x01
+#define CCR_REG_BUS_WIDTH_SELECT_BIT    0x00
+
+#define CCR_REG_TFT_24_BIT              0x00
+#define CCR_REG_TFT_18_BIT              0x01
+#define CCR_REG_TFT_16_BIT              0x10
+#define CCR_REG_TFT_NO_BIT              0x11
+
+#define CCR_REG_BUS_8_BIT               0x00
+#define CCR_REG_BUS_16_BIT              0x01
 
 /* ------------------------------ */
 /* ---- Register Address Map ---- */
 /* ------------------------------ */
 
-#define LT7381_REGISTER_SRR             0x00 /**< Software reset register */
-#define LT7381_REGISTER_CCR             0x01
+#define LT7381_REGISTER_SRR             0x00 /**< Software Reset Register */
+#define LT7381_REGISTER_CCR             0x01 /**< Chip Configuration Register  */
 #define LT7381_REGISTER_MACR            0x02
 #define LT7381_REGISTER_ICR             0x03
 #define LT7381_REGISTER_MRWDP           0x04
@@ -166,17 +203,17 @@ extern "C" {
 #define LT7381_REGISTER 0x82
 #define LT7381_REGISTER 0x83
 #define LT7381_REGISTER_PSCLR           0x84
-#define LT7381_REGISTER_PMUXR           0x85
-#define LT7381_REGISTER_PCFGR           0x86
+#define LT7381_REGISTER_PMUXR           0x85 /**< PWM Clock Mux Register */
+#define LT7381_REGISTER_PCFGR           0x86 /**< PWM Configuration Register */
 #define LT7381_REGISTER_DZ_LENGTH       0x87
-#define LT7381_REGISTER_TCMPB0_LOW      0x88
-#define LT7381_REGISTER_TCMPB0_HIGH     0x89
-#define LT7381_REGISTER_TCNTB0_LOW      0x8A
-#define LT7381_REGISTER_TCNTB0_HIGH     0x8B
-#define LT7381_REGISTER_TCMPB1_LOW      0x8C
-#define LT7381_REGISTER_TCMPB1_HIGH     0x8D
-#define LT7381_REGISTER_TCNTB1_LOW      0x8E
-#define LT7381_REGISTER_TCNTB1_HIGH     0x8F
+#define LT7381_REGISTER_TCMPB0_LOW      0x88 /**< Timer-0 Compare Buffer Register */
+#define LT7381_REGISTER_TCMPB0_HIGH     0x89 /**< Timer-0 Compare Buffer Register */
+#define LT7381_REGISTER_TCNTB0_LOW      0x8A /**< Timer-0 Count Buffer Register */
+#define LT7381_REGISTER_TCNTB0_HIGH     0x8B /**< Timer-0 Count Buffer Register */
+#define LT7381_REGISTER_TCMPB1_LOW      0x8C /**< Timer-1 Compare Buffer Register */
+#define LT7381_REGISTER_TCMPB1_HIGH     0x8D /**< Timer-1 Compare Buffer Register */
+#define LT7381_REGISTER_TCNTB1_LOW      0x8E /**< Timer-1 Count Buffer Register */
+#define LT7381_REGISTER_TCNTB1_HIGH     0x8F /**< Timer-1 Count Buffer Register */
 
 #define LT7381_REGISTER_BLT_CTRL0       0x90
 #define LT7381_REGISTER_BLT_CTRL1       0x91
@@ -263,11 +300,11 @@ extern "C" {
 #define LT7381_REGISTER 0xDE
 #define LT7381_REGISTER_PMU             0xDF
 
-#define LT7381_REGISTER_SDRAR           0xE0
-#define LT7381_REGISTER_SDRMD           0xE1
-#define LT7381_REGISTER_SDR_REF_LOW     0xE2
-#define LT7381_REGISTER_SDR_REF_HIGH    0xE3
-#define LT7381_REGISTER_SDRCR           0xE4
+#define LT7381_REGISTER_SDRAR           0xE0 /**< SDRAM Attribute Register  */
+#define LT7381_REGISTER_SDRMD           0xE1 /**< SDRAM Mode Register */
+#define LT7381_REGISTER_SDR_REF_LOW     0xE2 /**< SDRAM Auto Refresh Interval L */
+#define LT7381_REGISTER_SDR_REF_HIGH    0xE3 /**< SDRAM Auto Refresh Interval H */
+#define LT7381_REGISTER_SDRCR           0xE4 /**< SDRAM Control Register */
 #define LT7381_REGISTER_I2CMCK_LOW      0xE5
 #define LT7381_REGISTER_I2CMCK_HIGH     0xE6
 

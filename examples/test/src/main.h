@@ -1,27 +1,14 @@
 #pragma once
 
-/* Bus selection */
-#define BUS_TYPE_I80    0u
-#define BUS_TYPE_SPI    1u
-#define BUS_TYPE_I2C    2u
+#include "lt7381.h"
 
-/* Select interface here */
-#define BUS_TYPE BUS_TYPE_I80
-
-#define LT7381_BACKLIGHT_TYPE LT7381_BACKLIGHT_EXT_PWM
-
-#if (BUS_TYPE == BUS_TYPE_I80)
+#if (LT7381_BUS_TYPE == LT7381_BUS_I80)
 #include "esp_lcd_io_i80.h"
-#elif (BUS_TYPE == BUS_TYPE_SPI)
+#elif (LT7381_BUS_TYPE == LT7381_BUS_SPI)
 #include "esp_lcd_io_spi.h"
-#elif (BUS_TYPE == BUS_TYPE_SPI)
+#elif (LT7381_BUS_TYPE == LT7381_BUS_IIC)
 #include "esp_lcd_io_iic.h"
 #endif
-/* ---------------- DISPLAY SIZE ---------------- */
-
-#define LCD_WIDTH   800
-#define LCD_HEIGHT  480
-
 
 /* ---------------- CONTROL PINS ---------------- */
 

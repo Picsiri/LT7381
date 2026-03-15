@@ -1,25 +1,13 @@
 
-#include "LT7381.h"
-#include "LT7381_Internals.h"
+#include "lt7381.h"
+#include "lt7381_Internals.h"
+
+#ifndef LT7381_CONFIG_USER
+#warning "Using LT7381 default configuration"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-/* ----------------------------- */
-/* -- Backlight configuration -- */
-/* ----------------------------- */
-#define LT7381_BACKLIGHT_INT_PWM        1
-#define LT7381_BACKLIGHT_EXT_PWM        2
-
-#define LT7381_BACKLIGHT_RESOLUTION     16  
-#define LT7381_BACKLIGHT_TIMER          LEDC_HIGH_SPEED_TIMER_0
-#define LT7381_BACKLIGHT_MODE           LEDC_LOW_SPEED_MODE
-#define LT7381_BACKLIGHT_CHANNEL        LEDC_CHANNEL_2
-#define LT7381_BACKLIGHT_FULL_SCALE     0xFFFF
-
-#ifndef LT7381_BACKLIGHT_TYPE
-#error "define the backlight mode in the .ini file. Ie: build_flags = -LT7381_BACKLIGHT_MODE=LT7381_BACKLIGHT_EXT_PWM"
 #endif
 
 /* ------------------------------ */
@@ -62,7 +50,6 @@ static esp_err_t panel_lt7381_disp_on(
   esp_lcd_panel_t *panel,
   bool on
 );
-
 
 /* ---------------------------- */
 /* ----- Global Functions ----- */
@@ -276,22 +263,28 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
 {
   lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
   esp_err_t       ret = ESP_OK;
+  uint8_t status;
   
-  ESP_GOTO_ON_ERROR(panel_lt7381_check(), err, PRINT_TAG, "Panel failed to settle in time. Display unavailable.");
+  ESP_GOTO_ON_ERROR(lt7381_system_wait_ready(panel), err, PRINT_TAG, "Panel failed to settle in time. Display unavailable.");
   
   vTaskDelay(pdMS_TO_TICKS(100));
 
-  while(ER_TFT.LCD_StatusRead()&0x02);
+  // TODO: might not even needed as this check is part of the lt7381_system_wait_ready() call a few lines up. No capacity to test though.
+  do
+  {
+    lt7381_status_read(panel, &status);
+  }
+  while(GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) > 0u);
 
+  lt7381_pll_init(panel);
 
-  ER_TFT.PLL_Initial();
+  lt7381_sdram_init(panel);
 
-  ER_TFT.SDRAM_initail();
-
-//**[01h]**//
-  ER_TFT.TFT_16bit();
-  ER_TFT.Host_Bus_16bit(); //Host bus 16bit
-      
+  lt7381_tft_panel_setting(panel, CCR_REG_TFT_16_BIT);
+ #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
+  lt7381_bus_width_setting(panel, CCR_REG_BUS_16_BIT);
+ #endif
+ 
 //**[02h]**//
   ER_TFT.RGB_16b_16bpp();
   ER_TFT.MemWrite_Left_Right_Top_Down(); 
