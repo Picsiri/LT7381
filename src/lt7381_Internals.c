@@ -256,7 +256,7 @@ static esp_err_t lt7381_wait_sdram_ready(esp_lcd_panel_t *panel)
   return ESP_OK;
 }
 
-static esp_err_t lt7381_sdram_init(esp_lcd_panel_t *panel)
+static esp_err_t lt7381_SDRAM_init(esp_lcd_panel_t *panel)
 {
   esp_err_t ret = ESP_OK;
   uint16_t sdram_itv;
@@ -317,7 +317,7 @@ static esp_err_t lt7381_tft_panel_setting(esp_lcd_panel_t *panel, uint8_t settin
   esp_err_t ret = ESP_OK;
   uint8_t regdata;
 
-  ret |= lt7381_reg_read(panel, LT7381_REGISTER_CCR, regdata);
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_CCR, &regdata);
   CLEAR_BIT(regdata, CCR_REG_PANEL_IF_SETTING_LOW);
   CLEAR_BIT(regdata, CCR_REG_PANEL_IF_SETTING_HIGH);
   
@@ -347,7 +347,7 @@ static esp_err_t lt7381_bus_width_setting(esp_lcd_panel_t *panel, uint8_t settin
   esp_err_t ret = ESP_OK;
   uint8_t regdata;
 
-  ret |= lt7381_reg_read(panel, LT7381_REGISTER_CCR, regdata);
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_CCR, &regdata);
   
   if (setting == CCR_REG_BUS_8_BIT)
   {
@@ -362,6 +362,542 @@ static esp_err_t lt7381_bus_width_setting(esp_lcd_panel_t *panel, uint8_t settin
 
   return ret;
 }
+
+static esp_err_t lt7381_image_data_format(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_MACR, &regdata);
+  CLEAR_BIT(regdata, 7);
+  CLEAR_BIT(regdata, 6);
+
+  regdata |= setting << 6;
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_memwrite_directions_setting(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_MACR, &regdata);
+  CLEAR_BIT(regdata, 5);
+  CLEAR_BIT(regdata, 4);
+  CLEAR_BIT(regdata, 2);
+  CLEAR_BIT(regdata, 1);
+
+  regdata |= setting << 4;
+  regdata |= setting << 1;
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_graphic_or_text_mode(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_ICR, &regdata);
+
+  if (setting == ICR_REG_GRAPHIC_MODE)
+  {
+    CLEAR_BIT(regdata, 2);
+  }
+  else
+  {
+    SET_BIT(regdata, 2);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_memory_select(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_ICR, &regdata);
+
+  CLEAR_BIT(regdata, 1);
+  CLEAR_BIT(regdata, 0);
+
+  regdata |= setting << 0;
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_select_main_image_color_depth(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_MPWCTR, &regdata);
+
+  CLEAR_BIT(regdata, 3);
+  CLEAR_BIT(regdata, 2);
+
+  regdata |= setting << 2;
+
+  ret |= lt7381_reg_write(panel, LT7381_REGISTER_MPWCTR, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_PLCK_polarity(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_DPCR, &regdata);
+
+  if (setting == DPCR_REG_PCLK_RISING_EDGE)
+  {
+    CLEAR_BIT(regdata, DPCR_REG_PCLK_INVERSION_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, DPCR_REG_PCLK_INVERSION_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_display_on_off(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_DPCR, &regdata);
+
+  if (setting == DPCR_REG_DISPLAY_OFF)
+  {
+    CLEAR_BIT(regdata, DPCR_REG_PCLK_DISPLAY_ON_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, DPCR_REG_PCLK_DISPLAY_ON_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_display_test_on_off(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_DPCR, &regdata);
+
+  if (setting == DPCR_REG_DISPLAY_TEST_OFF)
+  {
+    CLEAR_BIT(regdata, DPCR_REG_PCLK_DISPLAY_TEST_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, DPCR_REG_PCLK_DISPLAY_TEST_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_display_vertical_direction(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_DPCR, &regdata);
+
+  if (setting == DPCR_REG_TOP_TO_BOTTOM)
+  {
+    CLEAR_BIT(regdata, DPCR_REG_PCLK_BOT_TO_TOP_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, DPCR_REG_PCLK_BOT_TO_TOP_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_display_color_sequence(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_DPCR, &regdata);
+  CLEAR_BIT(regdata, 2);
+  CLEAR_BIT(regdata, 1);
+  CLEAR_BIT(regdata, 0);
+
+  regdata |= setting << 0;
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_PLCK_polarity(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_DPCR, &regdata);
+
+  if (setting == DPCR_REG_PCLK_RISING_EDGE)
+  {
+    CLEAR_BIT(regdata, DPCR_REG_PCLK_INVERSION_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, DPCR_REG_PCLK_INVERSION_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_hsync_polarity(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_PCSR, &regdata);
+
+  if (setting == PCSR_REG_HSYNC_LOW_ACTIVE)
+  {
+    CLEAR_BIT(regdata, PCSR_REG_HSYNC_POLARITY_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, PCSR_REG_HSYNC_POLARITY_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_pde_polarity(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_PCSR, &regdata);
+
+  if (setting == PCSR_REG_PDE_HIGH_ACTIVE)
+  {
+    CLEAR_BIT(regdata, PCSR_REG_PDE_POLARITY_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, PCSR_REG_PDE_POLARITY_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_pde_idle_state(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_PCSR, &regdata);
+
+  if (setting == PCSR_REG_PDE_IDLE_LOW)
+  {
+    CLEAR_BIT(regdata, PCSR_REG_PDE_IDLE_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, PCSR_REG_PDE_IDLE_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_pclk_idle_state(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_PCSR, &regdata);
+
+  if (setting == PCSR_REG_PCLK_IDLE_LOW)
+  {
+    CLEAR_BIT(regdata, PCSR_REG_PCLK_IDLE_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, PCSR_REG_PCLK_IDLE_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_pd_idle_state(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_PCSR, &regdata);
+
+  if (setting == PCSR_REG_PD_IDLE_LOW)
+  {
+    CLEAR_BIT(regdata, PCSR_REG_PD_IDLE_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, PCSR_REG_PD_IDLE_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_hsync_idle_state(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_PCSR, &regdata);
+
+  if (setting == PCSR_REG_HSYNC_IDLE_LOW)
+  {
+    CLEAR_BIT(regdata, PCSR_REG_HSYNC_IDLE_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, PCSR_REG_HSYNC_IDLE_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_vsync_idle_state(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_PCSR, &regdata);
+
+  if (setting == PCSR_REG_VSYNC_IDLE_LOW)
+  {
+    CLEAR_BIT(regdata, PCSR_REG_VSYNC_IDLE_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, PCSR_REG_VSYNC_IDLE_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_lcd_horizontal_width_vertical_height(
+  esp_lcd_panel_t *panel,
+  uint16_t WX,
+  uint16_t HY)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t temp;
+
+  if (WX < 8)
+  {
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HDWR, 0x00);
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HDWFTR, WX);
+  }
+  else
+  {
+    temp = (WX / 8) - 1;
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HDWR, temp);
+
+    temp = WX % 8;
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HDWFTR, temp);
+  }
+
+  temp = HY - 1;
+  ret |= lt7381_reg_write(panel, LT7381_REGISTER_VDHR_LOW, temp);
+
+  temp = (HY - 1) >> 8;
+  ret |= lt7381_reg_write(panel, LT7381_REGISTER_VDHR_HIGH, temp);
+
+  return ret;
+}
+
+static esp_err_t lt7381_lcd_horizontal_non_display(
+  esp_lcd_panel_t *panel,
+  uint16_t WX)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t temp;
+
+  if (WX < 8)
+  {
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HNDR, 0x00);
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HNDFTR, WX);
+  }
+  else
+  {
+    temp = (WX / 8) - 1;
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HNDR, temp);
+
+    temp = WX % 8;
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HNDFTR, temp);
+  }
+
+  return ret;
+}
+
+static esp_err_t lt7381_lcd_hsync_start_position(
+  esp_lcd_panel_t *panel,
+  uint16_t WX)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t temp;
+
+  if (WX < 8)
+  {
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HSTR, 0x00);
+  }
+  else
+  {
+    temp = (WX / 8) - 1;
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HSTR, temp);
+  }
+
+  return ret;
+}
+
+static esp_err_t lt7381_lcd_hsync_pulse_width(
+  esp_lcd_panel_t *panel,
+  uint16_t WX)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t temp;
+
+  if (WX < 8)
+  {
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HPWR, 0x00);
+  }
+  else
+  {
+    temp = (WX / 8) - 1;
+    ret |= lt7381_reg_write(panel, LT7381_REGISTER_HPWR, temp);
+  }
+
+  return ret;
+}
+
+static esp_err_t lt7381_lcd_vertical_non_display(
+  esp_lcd_panel_t *panel,
+  uint16_t HY)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t temp;
+
+  temp = HY - 1;
+  ret |= lt7381_reg_write(panel, LT7381_REGISTER_VNDR_LOW, temp);
+
+  ret |= lt7381_reg_write(panel, LT7381_REGISTER_VNDR_HIGH, temp >> 8);
+
+  return ret;
+}
+
+static esp_err_t lt7381_lcd_vsync_start_position(
+  esp_lcd_panel_t *panel,
+  uint16_t HY)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_reg_write(panel, LT7381_REGISTER_VSTR, (HY - 1));
+
+  return ret;
+}
+
+static esp_err_t lt7381_lcd_vsync_pulse_width(
+  esp_lcd_panel_t *panel,
+  uint16_t HY)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_reg_write(panel, LT7381_REGISTER_VPWR, (HY - 1));
+
+  return ret;
+}
+
+
+
+static esp_err_t lt7381_memory_xy_mode(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_AW_COLOR, &regdata);
+
+  if (setting == PCSR_REG_VSYNC_IDLE_LOW)
+  {
+    CLEAR_BIT(regdata, AW_COLOR_REG_ADDRESS_MODE_BIT);
+  }
+  else
+  {
+    SET_BIT(regdata, AW_COLOR_REG_ADDRESS_MODE_BIT);
+  }
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+static esp_err_t lt7381_canvas_color_depth(esp_lcd_panel_t *panel, uint8_t setting)
+{
+  esp_err_t ret = ESP_OK;
+  uint8_t regdata;
+
+  ret |= lt7381_reg_read(panel, LT7381_REGISTER_AW_COLOR, &regdata);
+  CLEAR_BIT(regdata, 1);
+  CLEAR_BIT(regdata, 0);
+
+  regdata |= setting << 0;
+
+  ret |= lt7381_data_write(panel, regdata);
+
+  return ret;
+}
+
+
+
+
+
+
 
 static void panel_lt7381_wait(esp_lcd_panel_t *panel)
 {

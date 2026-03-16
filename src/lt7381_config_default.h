@@ -12,6 +12,12 @@
 
 #define LT7381_LCD_WIDTH                800
 #define LT7381_LCD_HEIGHT               480
+#define LT7381_LCD_HORIZONTAL_NON_DISP  140
+#define LT7381_LCD_HSYNC_START_POS      160
+#define LT7381_LCD_HSYNC_PULSE_WIDTH    20
+#define LT7381_LCD_VERTICAL_NON_DISP    20
+#define LT7381_LCD_VSYNC_START_POS      12
+#define LT7381_LCD_VSYNC_PULSE_WIDTH    3
 
 /* backlight */
 

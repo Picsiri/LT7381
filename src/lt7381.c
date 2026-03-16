@@ -265,6 +265,7 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   esp_err_t       ret = ESP_OK;
   uint8_t status;
   
+  // TODO: wrapp all calls on error handler
   ESP_GOTO_ON_ERROR(lt7381_system_wait_ready(panel), err, PRINT_TAG, "Panel failed to settle in time. Display unavailable.");
   
   vTaskDelay(pdMS_TO_TICKS(100));
@@ -278,45 +279,46 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
 
   lt7381_pll_init(panel);
 
-  lt7381_sdram_init(panel);
+  lt7381_SDRAM_init(panel);
+  
+  // commented calls are skipped because they set reset-default values
 
   lt7381_tft_panel_setting(panel, CCR_REG_TFT_16_BIT);
  #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
   lt7381_bus_width_setting(panel, CCR_REG_BUS_16_BIT);
  #endif
- 
-//**[02h]**//
-  ER_TFT.RGB_16b_16bpp();
-  ER_TFT.MemWrite_Left_Right_Top_Down(); 
-      
-//**[03h]**//
-  ER_TFT.Graphic_Mode();
-  ER_TFT.Memory_Select_SDRAM();
 
-  ER_TFT.HSCAN_L_to_R();     //REG[12h]:from left to right
-  ER_TFT.VSCAN_T_to_B();       //REG[12h]:from top to bottom
-  ER_TFT.PDATA_Set_RGB();        //REG[12h]:Select RGB output
+  //lt7381_image_data_format(panel, MACR_REG_DIRECT_WRITE);
+  //lt7381_memwrite_directions_setting(panel, MACR_REG_LEFT_RIGHT_TOP_BOT);
 
-  ER_TFT.Set_PCLK(LCD_PCLK_Falling_Rising);   //LCD_PCLK_Falling_Rising
-  ER_TFT.Set_HSYNC_Active(LCD_HSYNC_Active_Polarity);
-  ER_TFT.Set_VSYNC_Active(LCD_VSYNC_Active_Polarity);
-  ER_TFT.Set_DE_Active(LCD_DE_Active_Polarity);
- 
-  ER_TFT.LCD_HorizontalWidth_VerticalHeight(LCD_XSIZE_TFT ,LCD_YSIZE_TFT);
-  ER_TFT.LCD_Horizontal_Non_Display(LCD_HBPD);                          
-  ER_TFT.LCD_HSYNC_Start_Position(LCD_HFPD);                              
-  ER_TFT.LCD_HSYNC_Pulse_Width(LCD_HSPW);                              
-  ER_TFT.LCD_Vertical_Non_Display(LCD_VBPD);                               
-  ER_TFT.LCD_VSYNC_Start_Position(LCD_VFPD);                               
-  ER_TFT.LCD_VSYNC_Pulse_Width(LCD_VSPW);                              
-      
-  ER_TFT.Select_Main_Window_16bpp();
+  //lt7381_graphic_or_text_mode(panel, ICR_REG_GRAPHIC_MODE);
+  //lt7381_memory_select(panel, ICR_REG_MEMORY_AS_IMAGE_BUFFER);
 
-  ER_TFT.Memory_XY_Mode(); //Block mode (X-Y coordination addressing)
-  ER_TFT.Memory_16bpp_Mode();
-  ER_TFT.Select_Main_Window_16bpp();
+  lt7381_PLCK_polarity(panel, DPCR_REG_PCLK_FALLING_EDGE);
+  lt7381_display_test_on_off(panel, DPCR_REG_DISPLAY_TEST_ON);
+  //lt7381_display_vertical_direction(panel, DPCR_REG_TOP_TO_BOTTOM);
+  //lt7381_display_color_sequence(panel, DPCR_REG_COLOR_SEQ_RGB);
 
-  ER_TFT.Display_ON();
+  //lt7381_hsync_polarity(panel, PCSR_REG_HSYNC_LOW_ACTIVE);
+  //lt7381_vsync_polarity(panel, PCSR_REG_VSYNC_LOW_ACTIVE);
+  lt7381_pde_polarity(panel, PCSR_REG_PDE_LOW_ACTIVE);
+
+  lt7381_lcd_horizontal_width_vertical_height(panel, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT);
+  lt7381_lcd_horizontal_non_display(panel, LT7381_LCD_HORIZONTAL_NON_DISP);
+  lt7381_lcd_hsync_start_position(panel, LT7381_LCD_HSYNC_START_POS);
+  lt7381_lcd_hsync_pulse_width(panel, LT7381_LCD_HSYNC_PULSE_WIDTH);
+  lt7381_lcd_vertical_non_display(panel, LT7381_LCD_VERTICAL_NON_DISP);
+  lt7381_lcd_vsync_start_position(panel, LT7381_LCD_VSYNC_START_POS);
+  lt7381_lcd_vsync_pulse_width(panel, LT7381_LCD_VSYNC_PULSE_WIDTH);
+
+  //lt7381_select_main_image_color_depth(panel, MPWCTR_REG_COLOR_DEPTH_16BPP);
+
+  //lt7381_memory_xy_mode(panel, AW_COLOR_REG_BLOCK_MODE);
+  lt7381_canvas_color_depth(panel, AW_COLOR_REG_16BPP_MODE);
+  
+  //lt7381_select_main_image_color_depth(panel, MPWCTR_REG_COLOR_DEPTH_16BPP);
+
+  lt7381_display_on_off(panel, DPCR_REG_DISPLAY_ON);
 
 /* ------------------------ */
 /* ---- ERROR HANDLING ---- */
