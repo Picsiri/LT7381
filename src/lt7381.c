@@ -6,10 +6,6 @@
 #warning "Using LT7381 default configuration"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* ------------------------------ */
 /* ------ Function headers ------ */
 /* ------------------------------ */
@@ -46,7 +42,7 @@ static esp_err_t panel_lt7381_set_gap(
   int x_gap, int y_gap
 );
 
-static esp_err_t panel_lt7381_disp_on(
+static esp_err_t panel_lt7381_disp_off(
   esp_lcd_panel_t *panel,
   bool on
 );
@@ -133,7 +129,7 @@ esp_err_t esp_lcd_new_panel_lt7381(
   lt7381->esp_lcd_panel.swap_xy = panel_lt7381_swap_xy;
   lt7381->esp_lcd_panel.set_gap = panel_lt7381_set_gap;
   lt7381->esp_lcd_panel.invert_color = panel_lt7381_invert_color;
-  lt7381->esp_lcd_panel.disp_off = panel_lt7381_disp_on_off;
+  lt7381->esp_lcd_panel.disp_off = panel_lt7381_disp_off;
 
  #if (LT7381_BACKLIGHT_TYPE == LT7381_BACKLIGHT_EXT_PWM)
   ledc_timer_config_t ledc_timer = {
@@ -245,59 +241,59 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   uint8_t status;
   
   // TODO: wrapp all calls on error handler
-  ESP_GOTO_ON_ERROR(lt7381_system_wait_ready(panel), err, PRINT_TAG, "Panel failed to settle in time. Display unavailable.");
+  ESP_GOTO_ON_ERROR(lt7381_system_wait_ready(lt7381), err, PRINT_TAG, "Panel failed to settle in time. Display unavailable.");
   
   vTaskDelay(pdMS_TO_TICKS(100));
 
   // TODO: might not even needed as this check is part of the lt7381_system_wait_ready() call a few lines up. No capacity to test though.
   do
   {
-    lt7381_status_read(panel, &status);
+    lt7381_status_read(lt7381, &status);
   }
   while(GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) > 0u);
 
-  lt7381_pll_init(panel);
+  lt7381_pll_init(lt7381);
 
-  lt7381_SDRAM_init(panel);
+  lt7381_SDRAM_init(lt7381);
   
   // commented calls are skipped because they set reset-default values
 
-  lt7381_tft_panel_setting(panel, CCR_REG_TFT_16_BIT);
+  lt7381_tft_panel_setting(lt7381, CCR_REG_TFT_16_BIT);
  #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
-  lt7381_bus_width_setting(panel, CCR_REG_BUS_16_BIT);
+  lt7381_bus_width_setting(lt7381, CCR_REG_BUS_16_BIT);
  #endif
 
-  //lt7381_image_data_format(panel, MACR_REG_DIRECT_WRITE);
-  //lt7381_memwrite_directions_setting(panel, MACR_REG_LEFT_RIGHT_TOP_BOT);
+  //lt7381_image_data_format(lt7381, MACR_REG_DIRECT_WRITE);
+  //lt7381_memwrite_directions_setting(lt7381, MACR_REG_LEFT_RIGHT_TOP_BOT);
 
-  //lt7381_graphic_or_text_mode(panel, ICR_REG_GRAPHIC_MODE);
-  //lt7381_memory_select(panel, ICR_REG_MEMORY_AS_IMAGE_BUFFER);
+  //lt7381_graphic_or_text_mode(lt7381, ICR_REG_GRAPHIC_MODE);
+  //lt7381_memory_select(lt7381, ICR_REG_MEMORY_AS_IMAGE_BUFFER);
 
-  lt7381_PLCK_polarity(panel, DPCR_REG_PCLK_FALLING_EDGE);
-  lt7381_display_test_on_off(panel, DPCR_REG_DISPLAY_TEST_ON);
-  //lt7381_display_vertical_direction(panel, DPCR_REG_TOP_TO_BOTTOM);
-  //lt7381_display_color_sequence(panel, DPCR_REG_COLOR_SEQ_RGB);
+  lt7381_PLCK_polarity(lt7381, DPCR_REG_PCLK_FALLING_EDGE);
+  lt7381_display_test_on_off(lt7381, DPCR_REG_DISPLAY_TEST_ON);
+  //lt7381_display_vertical_direction(lt7381, DPCR_REG_TOP_TO_BOTTOM);
+  //lt7381_display_color_sequence(lt7381, DPCR_REG_COLOR_SEQ_RGB);
 
-  //lt7381_hsync_polarity(panel, PCSR_REG_HSYNC_LOW_ACTIVE);
-  //lt7381_vsync_polarity(panel, PCSR_REG_VSYNC_LOW_ACTIVE);
-  lt7381_pde_polarity(panel, PCSR_REG_PDE_LOW_ACTIVE);
+  //lt7381_hsync_polarity(lt7381, PCSR_REG_HSYNC_LOW_ACTIVE);
+  //lt7381_vsync_polarity(lt7381, PCSR_REG_VSYNC_LOW_ACTIVE);
+  lt7381_pde_polarity(lt7381, PCSR_REG_PDE_LOW_ACTIVE);
 
-  lt7381_lcd_horizontal_width_vertical_height(panel, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT);
-  lt7381_lcd_horizontal_non_display(panel, LT7381_LCD_HORIZONTAL_NON_DISP);
-  lt7381_lcd_hsync_start_position(panel, LT7381_LCD_HSYNC_START_POS);
-  lt7381_lcd_hsync_pulse_width(panel, LT7381_LCD_HSYNC_PULSE_WIDTH);
-  lt7381_lcd_vertical_non_display(panel, LT7381_LCD_VERTICAL_NON_DISP);
-  lt7381_lcd_vsync_start_position(panel, LT7381_LCD_VSYNC_START_POS);
-  lt7381_lcd_vsync_pulse_width(panel, LT7381_LCD_VSYNC_PULSE_WIDTH);
+  lt7381_lcd_horizontal_width_vertical_height(lt7381, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT);
+  lt7381_lcd_horizontal_non_display(lt7381, LT7381_LCD_HORIZONTAL_NON_DISP);
+  lt7381_lcd_hsync_start_position(lt7381, LT7381_LCD_HSYNC_START_POS);
+  lt7381_lcd_hsync_pulse_width(lt7381, LT7381_LCD_HSYNC_PULSE_WIDTH);
+  lt7381_lcd_vertical_non_display(lt7381, LT7381_LCD_VERTICAL_NON_DISP);
+  lt7381_lcd_vsync_start_position(lt7381, LT7381_LCD_VSYNC_START_POS);
+  lt7381_lcd_vsync_pulse_width(lt7381, LT7381_LCD_VSYNC_PULSE_WIDTH);
 
-  //lt7381_select_main_image_color_depth(panel, MPWCTR_REG_COLOR_DEPTH_16BPP);
+  //lt7381_select_main_image_color_depth(lt7381, MPWCTR_REG_COLOR_DEPTH_16BPP);
 
-  //lt7381_memory_xy_mode(panel, AW_COLOR_REG_BLOCK_MODE);
-  lt7381_canvas_color_depth(panel, AW_COLOR_REG_16BPP_MODE);
+  //lt7381_memory_xy_mode(lt7381, AW_COLOR_REG_BLOCK_MODE);
+  lt7381_canvas_color_depth(lt7381, AW_COLOR_REG_16BPP_MODE);
   
-  //lt7381_select_main_image_color_depth(panel, MPWCTR_REG_COLOR_DEPTH_16BPP);
+  //lt7381_select_main_image_color_depth(lt7381, MPWCTR_REG_COLOR_DEPTH_16BPP);
 
-  lt7381_display_on_off(panel, DPCR_REG_DISPLAY_ON);
+  lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_ON);
 
 /* ------------------------ */
 /* ---- ERROR HANDLING ---- */
@@ -341,22 +337,22 @@ static esp_err_t panel_lt7381_draw_bitmap(esp_lcd_panel_t *panel, int x_start, i
   height = y_end - y_start;
 
   /* define an area of frame memory where MCU can access */
-  lt7381_active_window_xy(panel, x_start, y_start);
-  lt7381_active_window_wh(panel, width, height);
+  lt7381_active_window_xy(lt7381, x_start, y_start);
+  lt7381_active_window_wh(lt7381, width, height);
 
   /* set cursor */
-  lt7381_cursor_xy(panel, x_start, y_start);
+  lt7381_cursor_xy(lt7381, x_start, y_start);
 
   /* Write to graphic RAM */
   uint32_t len = (x_end - x_start) * (y_end - y_start) * lt7381->bytes_per_pixel;
   
   const uint8_t *data = (const uint8_t *)color_data;
 
-  lt7381_cmd_write(panel, LT7381_REGISTER_MRWDP);
+  lt7381_cmd_write(lt7381, LT7381_REGISTER_MRWDP);
   for (uint32_t i = 0u; i < len; i++)
   {
-    lt7381_data_write(panel, data[i]);
-    panel_lt7381_wait(panel);
+    lt7381_data_write(lt7381, data[i]);
+    lt7381_wait(lt7381);
   }
   
   return ESP_OK;
@@ -390,20 +386,16 @@ static esp_err_t panel_lt7381_invert_color(esp_lcd_panel_t *panel, bool invert_c
   return ESP_ERR_NOT_SUPPORTED;
 }
 
-static esp_err_t panel_lt7381_disp_on_off(esp_lcd_panel_t *panel, bool on)
+static esp_err_t panel_lt7381_disp_off(esp_lcd_panel_t *panel, bool on)
 {
   lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
 
   if (on)
   {
-    return lt7381_display_on_off(panel, DPCR_REG_DISPLAY_ON);
+    return lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_ON);
   }
   else
   {
-    return lt7381_display_on_off(panel, DPCR_REG_DISPLAY_OFF);
+    return lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_OFF);
   }
 }
-
-#ifdef __cplusplus
-}
-#endif

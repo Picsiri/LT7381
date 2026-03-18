@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+#include "esp_bit_defs.h"
 // Data from
 /* https://www.buydisplay.com/download/manual/ER-TFTMC070-4_Datasheet.pdf */
 
@@ -27,7 +28,6 @@ extern "C" {
 
 #define BIT_TO_VAL(bit_pos)             (1u<<(uint8_t)(bit_pos))
 #define GET_BIT(byte, bit_pos)          ((uint8_t)(byte) & BIT_TO_VAL(bit_pos))
-#define BIT(n)                          (1U << (n))
 #define SET_BIT(x, n)                   ((x) |= BIT(n))
 #define CLEAR_BIT(x, n)                 ((x) &= ~BIT(n))
 
@@ -80,7 +80,7 @@ extern "C" {
 
 /* 0x10 Main/PIP Window Control Register */
 #define MPWCTR_REG_PIP_1_BIT            0x07
-#define MPWCTR_REG_PIP_1_BIT            0x06
+#define MPWCTR_REG_PIP_2_BIT            0x06
 #define MPWCTR_REG_PIP_1_2_SELECT_BIT   0x04
 #define MPWCTR_REG_SYNC_SIGNALS_BIT     0x00
 
@@ -152,9 +152,6 @@ extern "C" {
 #define AW_COLOR_REG_8BPP_MODE          0b00
 #define AW_COLOR_REG_16BPP_MODE         0b01
 #define AW_COLOR_REG_24BPP_MODE         0b10
-
-
-
 
 
 
@@ -236,16 +233,16 @@ extern "C" {
 #define LT7381_REGISTER_GCVP_HIGH       0x43
 #define LT7381_REGISTER_GCC0            0x44
 #define LT7381_REGISTER_GCC1            0x45
-#define LT7381_REGISTER 0x46
-#define LT7381_REGISTER 0x47
-#define LT7381_REGISTER 0x48
-#define LT7381_REGISTER 0x49
-#define LT7381_REGISTER 0x4A
-#define LT7381_REGISTER 0x4B
-#define LT7381_REGISTER 0x4C
-#define LT7381_REGISTER 0x4D
-#define LT7381_REGISTER 0x4E
-#define LT7381_REGISTER 0x4F
+/* #define LT7381_REGISTER 0x46 */
+/* #define LT7381_REGISTER 0x47 */
+/* #define LT7381_REGISTER 0x48 */
+/* #define LT7381_REGISTER 0x49 */
+/* #define LT7381_REGISTER 0x4A */
+/* #define LT7381_REGISTER 0x4B */
+/* #define LT7381_REGISTER 0x4C */
+/* #define LT7381_REGISTER 0x4D */
+/* #define LT7381_REGISTER 0x4E */
+/* #define LT7381_REGISTER 0x4F */
 
 #define LT7381_REGISTER_CVSSA_LOW       0x50 /**< Canvas Start Address */
 #define LT7381_REGISTER_CVSSA_DOWN      0x51 /**< Canvas Start Address */
@@ -285,8 +282,8 @@ extern "C" {
 #define LT7381_REGISTER_DTPH_HIGH       0x71
 #define LT7381_REGISTER_DTPV_LOW        0x72
 #define LT7381_REGISTER_DTPV_HIGH       0x73
-#define LT7381_REGISTER 0x74
-#define LT7381_REGISTER 0x75
+/* #define LT7381_REGISTER 0x74 */
+/* #define LT7381_REGISTER 0x75 */
 #define LT7381_REGISTER_DCR1            0x76
 #define LT7381_REGISTER_ELL_A_LOW       0x77
 #define LT7381_REGISTER_ELL_A_HIGH      0x78
@@ -296,12 +293,12 @@ extern "C" {
 #define LT7381_REGISTER_DEHR_HIGH       0x7C
 #define LT7381_REGISTER_DEVR_LOW        0x7D
 #define LT7381_REGISTER_DEVR_HIGH       0x7E
-#define LT7381_REGISTER 0x7F
+/* #define LT7381_REGISTER 0x7F */
 
-#define LT7381_REGISTER 0x80
-#define LT7381_REGISTER 0x81
-#define LT7381_REGISTER 0x82
-#define LT7381_REGISTER 0x83
+/* #define LT7381_REGISTER 0x80 */
+/* #define LT7381_REGISTER 0x81 */
+/* #define LT7381_REGISTER 0x82 */
+/* #define LT7381_REGISTER 0x83 */
 #define LT7381_REGISTER_PSCLR           0x84
 #define LT7381_REGISTER_PMUXR           0x85 /**< PWM Clock Mux Register */
 #define LT7381_REGISTER_PCFGR           0x86 /**< PWM Configuration Register */
@@ -355,33 +352,33 @@ extern "C" {
 #define LT7381_REGISTER_BLT_HIG_LOW     0xB3
 #define LT7381_REGISTER_BLT_HIG_HIGH    0xB4
 #define LT7381_REGISTER_APB_CTRL        0xB5
-#define LT7381_REGISTER 0xB6
-#define LT7381_REGISTER 0xB7
-#define LT7381_REGISTER 0xB8
-#define LT7381_REGISTER 0xB9
-#define LT7381_REGISTER 0xBA
-#define LT7381_REGISTER 0xBB
-#define LT7381_REGISTER 0xBC
-#define LT7381_REGISTER 0xBD
-#define LT7381_REGISTER 0xBE
-#define LT7381_REGISTER 0xBF
+/* #define LT7381_REGISTER 0xB6 */
+/* #define LT7381_REGISTER 0xB7 */
+/* #define LT7381_REGISTER 0xB8 */
+/* #define LT7381_REGISTER 0xB9 */
+/* #define LT7381_REGISTER 0xBA */
+/* #define LT7381_REGISTER 0xBB */
+/* #define LT7381_REGISTER 0xBC */
+/* #define LT7381_REGISTER 0xBD */
+/* #define LT7381_REGISTER 0xBE */
+/* #define LT7381_REGISTER 0xBF */
 
-#define LT7381_REGISTER 0xC0
-#define LT7381_REGISTER 0xC1
-#define LT7381_REGISTER 0xC2
-#define LT7381_REGISTER 0xC3
-#define LT7381_REGISTER 0xC4
-#define LT7381_REGISTER 0xC5
-#define LT7381_REGISTER 0xC6
-#define LT7381_REGISTER 0xC7
-#define LT7381_REGISTER 0xC8
-#define LT7381_REGISTER 0xC9
-#define LT7381_REGISTER 0xCA
-#define LT7381_REGISTER 0xCB
+/* #define LT7381_REGISTER 0xC0 */
+/* #define LT7381_REGISTER 0xC1 */
+/* #define LT7381_REGISTER 0xC2 */
+/* #define LT7381_REGISTER 0xC3 */
+/* #define LT7381_REGISTER 0xC4 */
+/* #define LT7381_REGISTER 0xC5 */
+/* #define LT7381_REGISTER 0xC6 */
+/* #define LT7381_REGISTER 0xC7 */
+/* #define LT7381_REGISTER 0xC8 */
+/* #define LT7381_REGISTER 0xC9 */
+/* #define LT7381_REGISTER 0xCA */
+/* #define LT7381_REGISTER 0xCB */
 #define LT7381_REGISTER_CCR0            0xCC
 #define LT7381_REGISTER_CCR1            0xCD
-#define LT7381_REGISTER 0xCE
-#define LT7381_REGISTER 0xCF
+/* #define LT7381_REGISTER 0xCE */
+/* #define LT7381_REGISTER 0xCF */
 
 #define LT7381_REGISTER_FLDR            0xD0
 #define LT7381_REGISTER_F2FSSR          0xD1
@@ -391,13 +388,13 @@ extern "C" {
 #define LT7381_REGISTER_BGCR            0xD5
 #define LT7381_REGISTER_BGCG            0xD6
 #define LT7381_REGISTER_BGCB            0xD7
-#define LT7381_REGISTER 0xD8
-#define LT7381_REGISTER 0xD9
-#define LT7381_REGISTER 0xDA
+/* #define LT7381_REGISTER 0xD8 */
+/* #define LT7381_REGISTER 0xD9 */
+/* #define LT7381_REGISTER 0xDA */
 #define LT7381_REGISTER_CGRAM_STR0      0xDB
-#define LT7381_REGISTER 0xDC
-#define LT7381_REGISTER 0xDD
-#define LT7381_REGISTER 0xDE
+/* #define LT7381_REGISTER 0xDC */
+/* #define LT7381_REGISTER 0xDD */
+/* #define LT7381_REGISTER 0xDE */
 #define LT7381_REGISTER_PMU             0xDF
 
 #define LT7381_REGISTER_SDRAR           0xE0 /**< SDRAM Attribute Register  */
@@ -412,11 +409,11 @@ extern "C" {
 #define LT7381_REGISTER_I2CMRXR         0xE8
 #define LT7381_REGISTER_I2CMCMD         0xE9
 #define LT7381_REGISTER_I2CMST          0xEA
-#define LT7381_REGISTER 0xEB
-#define LT7381_REGISTER 0xEC
-#define LT7381_REGISTER 0xED
-#define LT7381_REGISTER 0xEE
-#define LT7381_REGISTER 0xEF
+/* #define LT7381_REGISTER 0xEB */
+/* #define LT7381_REGISTER 0xEC */
+/* #define LT7381_REGISTER 0xED */
+/* #define LT7381_REGISTER 0xEE */
+/* #define LT7381_REGISTER 0xEF */
 
 #define LT7381_REGISTER_GPIOAD          0xF0
 #define LT7381_REGISTER_GPIOA           0xF1
@@ -425,10 +422,10 @@ extern "C" {
 #define LT7381_REGISTER_GPIOC           0xF4
 #define LT7381_REGISTER_GPIODD          0xF5
 #define LT7381_REGISTER_GPIOD           0xF6
-#define LT7381_REGISTER 0xF7
-#define LT7381_REGISTER 0xF8
-#define LT7381_REGISTER 0xF9
-#define LT7381_REGISTER 0xFA
+/* #define LT7381_REGISTER 0xF7 */
+/* #define LT7381_REGISTER 0xF8 */
+/* #define LT7381_REGISTER 0xF9 */
+/* #define LT7381_REGISTER 0xFA */
 #define LT7381_REGISTER_KSCR1           0xFB
 #define LT7381_REGISTER_KSCR2           0xFC
 #define LT7381_REGISTER_KSDR1           0xFD

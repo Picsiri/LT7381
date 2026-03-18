@@ -18,6 +18,11 @@ extern "C" {
 #include "lt7381_config_default.h"
 #endif
 
+#include "driver/gpio.h"
+#include "esp_lcd_panel_io.h"
+#include "esp_lcd_panel_vendor.h"
+#include "esp_lcd_panel_interface.h"
+
 /**
  * @brief Vendor specific configuration structure for panel device
  */
