@@ -165,7 +165,7 @@ extern "C" {
 #define LT7381_REGISTER_CCR             0x01 /**< Chip Configuration Register  */
 #define LT7381_REGISTER_MACR            0x02 /**< Memory Access Control Register */
 #define LT7381_REGISTER_ICR             0x03 /**< Input Control Register */
-#define LT7381_REGISTER_MRWDP           0x04
+#define LT7381_REGISTER_MRWDP           0x04 /**< Memory Data Read/Write Port */
 #define LT7381_REGISTER_PPLLC1          0x05
 #define LT7381_REGISTER_PPLLC2          0x06
 #define LT7381_REGISTER_MPLLC1          0x07
@@ -195,16 +195,16 @@ extern "C" {
 #define LT7381_REGISTER_VSTR            0x1E /**< VSYNC Start Position Register */
 #define LT7381_REGISTER_VPWR            0x1F /**< VSYNC Pulse Width Register */
 
-#define LT7381_REGISTER_MISA_LOW        0x20
-#define LT7381_REGISTER_MISA_DOWN       0x21
-#define LT7381_REGISTER_MISA_UP         0x22
-#define LT7381_REGISTER_MISA_HIGH       0x23
-#define LT7381_REGISTER_MIW_LOW         0x24
-#define LT7381_REGISTER_MIW_HIGH        0x25
-#define LT7381_REGISTER_MWULX_LOW       0x26
-#define LT7381_REGISTER_MWULX_HIGH      0x27
-#define LT7381_REGISTER_MWULY_LOW       0x28
-#define LT7381_REGISTER_MWULY_HIGH      0x29
+#define LT7381_REGISTER_MISA_LOW        0x20 /**< Main Image Start Address */
+#define LT7381_REGISTER_MISA_DOWN       0x21 /**< Main Image Start Address */
+#define LT7381_REGISTER_MISA_UP         0x22 /**< Main Image Start Address */
+#define LT7381_REGISTER_MISA_HIGH       0x23 /**< Main Image Start Address */
+#define LT7381_REGISTER_MIW_LOW         0x24 /**< Main Image Width */
+#define LT7381_REGISTER_MIW_HIGH        0x25 /**< Main Image Width */
+#define LT7381_REGISTER_MWULX_LOW       0x26 /**< Main Window Upper-Left Corner X-Coordinates */
+#define LT7381_REGISTER_MWULX_HIGH      0x27 /**< Main Window Upper-Left Corner X-Coordinates */
+#define LT7381_REGISTER_MWULY_LOW       0x28 /**< Main Window Upper-Left corner Y-Coordinates */
+#define LT7381_REGISTER_MWULY_HIGH      0x29 /**< Main Window Upper-Left corner Y-Coordinates */
 #define LT7381_REGISTER_PWDULX_LOW      0x2A
 #define LT7381_REGISTER_PWDULX_HIGH     0x2B
 #define LT7381_REGISTER_PWDULY_LOW      0x2C
@@ -246,26 +246,26 @@ extern "C" {
 #define LT7381_REGISTER 0x4E
 #define LT7381_REGISTER 0x4F
 
-#define LT7381_REGISTER_CVSSA_LOW       0x50
-#define LT7381_REGISTER_CVSSA_DOWN      0x51
-#define LT7381_REGISTER_CVSSA_UP        0x52
-#define LT7381_REGISTER_CVSSA_HIGH      0x53
-#define LT7381_REGISTER_CVS_IMWTH_LOW   0x54
-#define LT7381_REGISTER_CVS_IMWTH_HIGH  0x55
-#define LT7381_REGISTER_AWUL_X_LOW      0x56
-#define LT7381_REGISTER_AWUL_X_HIGH     0x57
-#define LT7381_REGISTER_AWUL_Y_LOW      0x58
-#define LT7381_REGISTER_AWUL_Y_HIGH     0x59
-#define LT7381_REGISTER_AW_WTH_LOW      0x5A
-#define LT7381_REGISTER_AW_WTH_HIGH     0x5B
-#define LT7381_REGISTER_AW_HT_LOW       0x5C
-#define LT7381_REGISTER_AW_HT_HIGH      0x5D
+#define LT7381_REGISTER_CVSSA_LOW       0x50 /**< Canvas Start Address */
+#define LT7381_REGISTER_CVSSA_DOWN      0x51 /**< Canvas Start Address */
+#define LT7381_REGISTER_CVSSA_UP        0x52 /**< Canvas Start Address */
+#define LT7381_REGISTER_CVSSA_HIGH      0x53 /**< Canvas Start Address */
+#define LT7381_REGISTER_CVS_IMWTH_LOW   0x54 /**< Canvas Image Width */
+#define LT7381_REGISTER_CVS_IMWTH_HIGH  0x55 /**< Canvas Image Width */
+#define LT7381_REGISTER_AWUL_X_LOW      0x56 /**< Active Window Upper-Left Corner X-Coordinates */
+#define LT7381_REGISTER_AWUL_X_HIGH     0x57 /**< Active Window Upper-Left Corner X-Coordinates */
+#define LT7381_REGISTER_AWUL_Y_LOW      0x58 /**< Active Window Upper-Left Corner Y-Coordinates */
+#define LT7381_REGISTER_AWUL_Y_HIGH     0x59 /**< Active Window Upper-Left Corner Y-Coordinates */
+#define LT7381_REGISTER_AW_WTH_LOW      0x5A /**< Active Window Width */
+#define LT7381_REGISTER_AW_WTH_HIGH     0x5B /**< Active Window Width */
+#define LT7381_REGISTER_AW_HT_LOW       0x5C /**< Active Window Height */
+#define LT7381_REGISTER_AW_HT_HIGH      0x5D /**< Active Window Height */
 #define LT7381_REGISTER_AW_COLOR        0x5E /**< Color Depth of Canvas & Active Window */
-#define LT7381_REGISTER_CURH_LOW        0x5F
+#define LT7381_REGISTER_CURH_LOW        0x5F /**< Graphic Read/Write X-Coordinate Register */
 
-#define LT7381_REGISTER_CURH_HIGH       0x60
-#define LT7381_REGISTER_CURV_LOW        0x61
-#define LT7381_REGISTER_CURV_HIGH       0x62
+#define LT7381_REGISTER_CURH_HIGH       0x60 /**< Graphic Read/Write X-Coordinate Register */
+#define LT7381_REGISTER_CURV_LOW        0x61 /**< Graphic Read/Write Y-Coordinate Register */
+#define LT7381_REGISTER_CURV_HIGH       0x62 /**< Graphic Read/Write Y-Coordinate Register */
 #define LT7381_REGISTER_F_CURX_LOW      0x63
 #define LT7381_REGISTER_F_CURX_HIGH     0x64
 #define LT7381_REGISTER_F_CURY_LOW      0x65

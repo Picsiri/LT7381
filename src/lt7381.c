@@ -94,12 +94,6 @@ esp_err_t esp_lcd_new_panel_lt7381(
     };
     ESP_GOTO_ON_ERROR(gpio_config(&io_conf), err, PRINT_TAG, "configure GPIO for WAIT line failed");
   }
-
-  /* Setup default CCR and PDCR values (both 0x00 by default) */
-  lt7381->chip_config_register = 0x00;
-  lt7381->display_config_register = 0x00;
-  /* Setup default memory address control register to 16bpp, no rotation */
-  lt7381->macr = 0x40;
   
   // Note: Color space used for compatibility with IDF v4.4
   switch (panel_dev_config->color_space)
@@ -120,25 +114,10 @@ esp_err_t esp_lcd_new_panel_lt7381(
     break;
   }
 
-  switch (vendor_cfg->mcu_bit_interface)
-  {
-  case 8:
-    /* default value of 0x00 is for 8-bit */
-    break;
-  case 16:
-    lt7381->chip_config_register |= 0x01;
-    break;
-  default:
-    ESP_GOTO_ON_FALSE(false, ESP_ERR_NOT_SUPPORTED, err, PRINT_TAG, "unsupported MCU interface width (supports only 8-bit and 16-bit");
-    break;
-  }
-
   lt7381->io_handle = io_handle;
-  lt7381->lcd_width = vendor_cfg->lcd_width;
-  lt7381->lcd_height = vendor_cfg->lcd_height;
   lt7381->reset_gpio_num = panel_dev_config->reset_gpio_num;
   lt7381->wait_gpio_num = vendor_cfg->wait_gpio_num;
-  lt7381->bits_per_pixel = panel_dev_config->bits_per_pixel;
+  lt7381->bytes_per_pixel = panel_dev_config->bits_per_pixel / 8u;
   lt7381->reset_gpio_num = panel_dev_config->reset_gpio_num;
   lt7381->reset_level = panel_dev_config->flags.reset_active_high;
   /*
@@ -158,7 +137,7 @@ esp_err_t esp_lcd_new_panel_lt7381(
 
  #if (LT7381_BACKLIGHT_TYPE == LT7381_BACKLIGHT_EXT_PWM)
   ledc_timer_config_t ledc_timer = {
-      .speed_mode       = LEDC_HIGH_SPEED_MODE,
+      .speed_mode       = LEDC_LOW_SPEED_MODE,
       .duty_resolution  = LT7381_BACKLIGHT_RESOLUTION,
       .timer_num        = LT7381_BACKLIGHT_TIMER,
       .freq_hz          = 5000,  // PWM frequency, adjust as needed
@@ -167,8 +146,8 @@ esp_err_t esp_lcd_new_panel_lt7381(
   ledc_timer_config(&ledc_timer);
 
   ledc_channel_config_t ledc_channel = {
-      .gpio_num       = lt7381->esp_lcd_panel.backlight_pwm,
-      .speed_mode     = LEDC_HIGH_SPEED_MODE,
+      .gpio_num       = lt7381->pwm_gpio_num,
+      .speed_mode     = LEDC_LOW_SPEED_MODE,
       .channel        = LT7381_BACKLIGHT_CHANNEL,
       .intr_type      = LEDC_INTR_DISABLE,
       .timer_sel      = LT7381_BACKLIGHT_TIMER,
@@ -351,22 +330,35 @@ static esp_err_t panel_lt7381_draw_bitmap(esp_lcd_panel_t *panel, int x_start, i
   lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
   esp_lcd_panel_io_handle_t io_handle = lt7381->io_handle;
   assert((x_start < x_end) && (y_start < y_end) && "start position must be smaller than end position");
+  uint16_t width, height;
 
   x_start += lt7381->x_gap;
   x_end += lt7381->x_gap;
   y_start += lt7381->y_gap;
   y_end += lt7381->y_gap;
 
+  width = x_end - x_start;
+  height = y_end - y_start;
+
   /* define an area of frame memory where MCU can access */
-  panel_lt7381_set_window(panel, x_start, y_start, x_end, y_end);
+  lt7381_active_window_xy(panel, x_start, y_start);
+  lt7381_active_window_wh(panel, width, height);
 
   /* set cursor */
-  panel_lt7381_set_cursor(panel, x_start, y_start, x_end, y_end);
+  lt7381_cursor_xy(panel, x_start, y_start);
 
   /* Write to graphic RAM */
-  size_t len = (x_end - x_start) * (y_end - y_start) * 2;
-  esp_lcd_panel_io_tx_color(io_handle, lt7381_REG_MRWDP, color_data, len);
+  uint32_t len = (x_end - x_start) * (y_end - y_start) * lt7381->bytes_per_pixel;
+  
+  const uint8_t *data = (const uint8_t *)color_data;
 
+  lt7381_cmd_write(panel, LT7381_REGISTER_MRWDP);
+  for (uint32_t i = 0u; i < len; i++)
+  {
+    lt7381_data_write(panel, data[i]);
+    panel_lt7381_wait(panel);
+  }
+  
   return ESP_OK;
 }
 
@@ -398,30 +390,19 @@ static esp_err_t panel_lt7381_invert_color(esp_lcd_panel_t *panel, bool invert_c
   return ESP_ERR_NOT_SUPPORTED;
 }
 
-static esp_err_t panel_lt7381_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
+static esp_err_t panel_lt7381_disp_on_off(esp_lcd_panel_t *panel, bool on)
 {
   lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
-/*
-0b: Display Off.
-1b: Display On.
-*/
 
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-  on_off = !on_off;
-#endif
-  esp_lcd_panel_disp_on_off
-  ESP_IDF_VERSION <ESP_IDF_VERSION_VAL(4,1,0)
-  if (on_off)
-    lt7381->display_config_register |= 0b01000000;
+  if (on)
+  {
+    return lt7381_display_on_off(panel, DPCR_REG_DISPLAY_ON);
+  }
   else
-    lt7381->display_config_register &= ~0b01000000;
-
-  panel_lt7381_tx_param(panel, lt7381_REG_DPCR, lt7381->display_config_register);
-  vTaskDelay(pdMS_TO_TICKS(20));
-
-  return ESP_OK;
+  {
+    return lt7381_display_on_off(panel, DPCR_REG_DISPLAY_OFF);
+  }
 }
-
 
 #ifdef __cplusplus
 }

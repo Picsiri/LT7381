@@ -8,6 +8,7 @@
 extern "C" {
 #endif
 
+
 /* include user config if available */
 #if __has_include("lt7381_config.h")
 #include "lt7381_config.h"
@@ -21,9 +22,6 @@ extern "C" {
 typedef struct {
   gpio_num_t    wait_gpio_num;      /* GPIO used to indicate busy state */
   gpio_num_t    lcd_backlight_pwm;  /* GPIO used to set backlight duty cycle */
-  uint16_t      lcd_width;          /* Width of the LCD panel in pixels */
-  uint16_t      lcd_height;         /* Height of the LCD panel in pixels */
-  uint8_t       mcu_bit_interface;  /* Selection between 8-bit and 16-bit MCU interface */
 } esp_lcd_panel_lt7381_config_t;
 
 /**
@@ -56,6 +54,7 @@ extern esp_err_t esp_lcd_new_panel_lt7381(
  *          - ESP_OK                on success
 */
 extern esp_err_t esp_lcd_panel_set_backlight(esp_lcd_panel_t *panel, uint16_t duty);
+
 
 #ifdef __cplusplus
 }
