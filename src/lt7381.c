@@ -162,11 +162,11 @@ esp_err_t esp_lcd_new_panel_lt7381(
 
   return ESP_OK;
 
-/* ------------------------ */
-/* ---- ERROR HANDLING ---- */
-/* ------------------------ */
+  /* ------------------------ */
+  /* ---- ERROR HANDLING ---- */
+  /* ------------------------ */
 
-err:
+ err:
   if (lt7381)
   {
     /* tidy up RST and/or WAIT gpio pins */

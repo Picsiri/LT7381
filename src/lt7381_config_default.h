@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __LT7381_CONFIG_DEFAULT_H__
+#define __LT7381_CONFIG_DEFAULT_H__
 
 /* bus selection */
 
@@ -69,3 +70,12 @@
 #define LT7381_SDRAM_LAYER_1            LT7381_SDRAM_LAYER_0 + LT7381_SDRAM_LAYER_STEP
 #define LT7381_SDRAM_LAYER_2            LT7381_SDRAM_LAYER_1 + LT7381_SDRAM_LAYER_STEP
 #define LT7381_SDRAM_LAYER_3            LT7381_SDRAM_LAYER_2 + LT7381_SDRAM_LAYER_STEP
+
+
+
+
+
+
+
+
+#endif

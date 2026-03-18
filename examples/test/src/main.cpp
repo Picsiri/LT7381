@@ -1,13 +1,11 @@
 #include <Arduino.h>
-#include "main.h"
-#include "LT7381.h"
 
-esp_lcd_panel_handle_t lcd_panel_handle = NULL;
-esp_lcd_panel_io_handle_t io_handle = NULL;
+//esp_lcd_panel_handle_t lcd_panel_handle = NULL;
+//esp_lcd_panel_io_handle_t io_handle = NULL;
 
 void setup()
 {
-
+/*
 #if (BUS_TYPE == BUS_TYPE_I80)
 
     esp_lcd_i80_bus_handle_t i80_bus = NULL;
@@ -91,7 +89,7 @@ void setup()
 #endif
 
 
-    /* panel configuration */
+    // panel configuration
 
     const esp_lcd_panel_lt7381_vendor_config_t vendor_config = {
         .lcd_width = LCD_WIDTH,
@@ -115,6 +113,7 @@ void setup()
 
     esp_lcd_panel_init(lcd_panel_handle);
     esp_lcd_panel_disp_on_off(lcd_panel_handle, true);
+    */
 }
 
 void loop()

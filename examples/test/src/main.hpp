@@ -1,14 +1,14 @@
-#pragma once
+extern "C" {
+    #include "lt7381.h"
 
-#include "lt7381.h"
-
-#if (LT7381_BUS_TYPE == LT7381_BUS_I80)
-#include "esp_lcd_io_i80.h"
-#elif (LT7381_BUS_TYPE == LT7381_BUS_SPI)
-#include "esp_lcd_io_spi.h"
-#elif (LT7381_BUS_TYPE == LT7381_BUS_IIC)
-#include "esp_lcd_io_iic.h"
-#endif
+    #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
+    #include "esp_lcd_io_i80.h"
+    #elif (LT7381_BUS_TYPE == LT7381_BUS_SPI)
+    #include "esp_lcd_io_spi.h"
+    #elif (LT7381_BUS_TYPE == LT7381_BUS_IIC)
+    #include "esp_lcd_io_iic.h"
+    #endif
+}
 
 /* ---------------- CONTROL PINS ---------------- */
 

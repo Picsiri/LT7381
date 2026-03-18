@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __LT7381_REGISTERS_H__
+#define __LT7381_REGISTERS_H__
 
 
 #ifdef __cplusplus
@@ -440,4 +441,7 @@ extern "C" {
 
 #ifdef __cplusplus
 }
+#endif
+
+
 #endif

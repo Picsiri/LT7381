@@ -2,7 +2,9 @@
  * Publicly offered interface for this driver.
  */
 
-#pragma once
+#ifndef __LT7381_H__
+#define __LT7381_H__
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,4 +60,7 @@ extern esp_err_t esp_lcd_panel_set_backlight(esp_lcd_panel_t *panel, uint16_t du
 
 #ifdef __cplusplus
 }
+#endif
+
+
 #endif

@@ -1,4 +1,9 @@
-#pragma once
+#ifndef __LT7381_INTERNALS_H__
+#define __LT7381_INTERNALS_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* include user config if available */
 #if __has_include("lt7381_config.h")
@@ -23,9 +28,6 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define LT7381_TIMEOUT_US     (30 * 1000)        /* How long to wait for panel operations (in uS) */
 
@@ -105,4 +107,6 @@ static esp_err_t lt7381_cursor_xy(esp_lcd_panel_t *panel, uint16_t x, uint16_t y
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
