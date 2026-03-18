@@ -231,6 +231,19 @@ esp_err_t esp_lcd_panel_draw_square_filled(
 
   return ESP_OK;
 }
+
+esp_err_t esp_lcd_panel_clear(esp_lcd_panel_t *panel, uint16_t color)
+{
+  lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
+
+  lt7381_foreground_color(lt7381, color);
+  lt7381_draw_start_xy(lt7381, 0, 0);
+  lt7381_draw_end_xy(lt7381, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT);
+  lt7381_start_square_fill(lt7381);
+
+  return ESP_OK;
+}
+
 /* ---------------------------------- */
 /* - Interface Function Definitions - */
 /* ---------------------------------- */
@@ -307,15 +320,12 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
 
   ESP_LOGE(PRINT_TAG, "lt7381_PLCK_polarity");
   lt7381_PLCK_polarity(lt7381, DPCR_REG_PCLK_FALLING_EDGE);
-  ESP_LOGE(PRINT_TAG, "lt7381_display_test_on_off");
-  lt7381_display_test_on_off(lt7381, DPCR_REG_DISPLAY_TEST_OFF);
+  //lt7381_display_test_on_off(lt7381, DPCR_REG_DISPLAY_TEST_OFF);
   //lt7381_display_vertical_direction(lt7381, DPCR_REG_TOP_TO_BOTTOM);
   //lt7381_display_color_sequence(lt7381, DPCR_REG_COLOR_SEQ_RGB);
-
   //lt7381_hsync_polarity(lt7381, PCSR_REG_HSYNC_LOW_ACTIVE);
   //lt7381_vsync_polarity(lt7381, PCSR_REG_VSYNC_LOW_ACTIVE);
-  lt7381_pde_polarity(lt7381, PCSR_REG_PDE_LOW_ACTIVE);
-
+  lt7381_pde_polarity(lt7381, PCSR_REG_PDE_HIGH_ACTIVE);
 
   lt7381_lcd_horizontal_width_vertical_height(lt7381, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT);
   lt7381_lcd_horizontal_non_display(lt7381, LT7381_LCD_HORIZONTAL_NON_DISP);
@@ -326,11 +336,8 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   lt7381_lcd_vsync_pulse_width(lt7381, LT7381_LCD_VSYNC_PULSE_WIDTH);
 
   //lt7381_select_main_image_color_depth(lt7381, MPWCTR_REG_COLOR_DEPTH_16BPP);
-
   //lt7381_memory_xy_mode(lt7381, AW_COLOR_REG_BLOCK_MODE);
   lt7381_canvas_color_depth(lt7381, AW_COLOR_REG_16BPP_MODE);
-  
-  //lt7381_select_main_image_color_depth(lt7381, MPWCTR_REG_COLOR_DEPTH_16BPP);
 
   lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_ON);
 

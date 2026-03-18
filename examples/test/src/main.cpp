@@ -3,30 +3,16 @@
 
 #include "main.hpp"
 #include "lt7381.h"
+#include "image.h"
 
 esp_lcd_panel_handle_t lcd_panel_handle = NULL;
 esp_lcd_panel_io_handle_t io_handle = NULL;
 
 void setup()
 {
-  pinMode(LCD_CS, OUTPUT);
-  digitalWrite(LCD_CS, HIGH);
-  
   Serial.begin(115200);
   delay(100);
   Serial.println("Hello!");
-
-	SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-	SPI.begin();
-
-  uint8_t temp = 0;
-  digitalWrite(LCD_CS, LOW);
-  SPI.transfer(0x40);
-  temp = SPI.transfer(0x00);
-  digitalWrite(LCD_CS, HIGH);
-
-  Serial.println("Status is");
-  Serial.println(temp);
 
 #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
 
@@ -156,11 +142,14 @@ void setup()
 
   lcd_panel_handle->disp_off(lcd_panel_handle, false);
 
+  esp_lcd_panel_clear(lcd_panel_handle, 0x0000);
+
   eps_lcd_panel_draw_pixel(lcd_panel_handle, 100, 100, 0x8888);
 
   esp_lcd_panel_draw_square_filled(lcd_panel_handle, 150, 150, 50, 50, 0x8888);
+  
+  esp_lcd_panel_draw_square_filled(lcd_panel_handle, 300, 200, 300, 200, 0xf000);
 
-  return;
   uint8_t random_image[50] =
   {
     0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
@@ -170,12 +159,15 @@ void setup()
     0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55
   };
   lcd_panel_handle->draw_bitmap(lcd_panel_handle, 50, 50, 55, 55, &random_image);
+
+  lcd_panel_handle->draw_bitmap(lcd_panel_handle, 75, 75, 80, 80, &random_image);
 }
 
 void loop()
 {
-  lcd_panel_handle->disp_off(lcd_panel_handle, false);
-  delay(1000);
-  lcd_panel_handle->disp_off(lcd_panel_handle, true);
+  lcd_panel_handle->draw_bitmap(lcd_panel_handle, 0, 0, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT, &test_image);
+  delay(2500);
+  
+  esp_lcd_panel_clear(lcd_panel_handle, 0x0000);
   delay(1000);
 }
