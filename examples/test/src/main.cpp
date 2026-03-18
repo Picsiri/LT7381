@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "SPI.h"
 
 #include "main.hpp"
 #include "lt7381.h"
@@ -8,6 +9,25 @@ esp_lcd_panel_io_handle_t io_handle = NULL;
 
 void setup()
 {
+  pinMode(LCD_CS, OUTPUT);
+  digitalWrite(LCD_CS, HIGH);
+  
+  Serial.begin(115200);
+  delay(100);
+  Serial.println("Hello!");
+
+	SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
+	SPI.begin();
+
+  uint8_t temp = 0;
+  digitalWrite(LCD_CS, LOW);
+  SPI.transfer(0x40);
+  temp = SPI.transfer(0x00);
+  digitalWrite(LCD_CS, HIGH);
+
+  Serial.println("Status is");
+  Serial.println(temp);
+
 #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
 
   esp_lcd_i80_bus_handle_t i80_bus = NULL;
@@ -57,22 +77,35 @@ void setup()
     .miso_io_num = LCD_SPI_MISO,
     .sclk_io_num = LCD_SPI_CLK,
     .quadwp_io_num = -1,
-    .quadhd_io_num = -1
+    .quadhd_io_num = -1,
+    .max_transfer_sz = 200 * 80 * sizeof(uint16_t),
   };
 
-  spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
+  ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO));
 
-  esp_lcd_panel_io_spi_config_t io_config = {
+  esp_lcd_panel_io_spi_config_t io_config =
+  {
     .cs_gpio_num = LCD_CS,
     .dc_gpio_num = LCD_DC,
-    .spi_mode = 0,
-    .pclk_hz = 40000000,
+    .spi_mode = SPI_MODE0,
+    .pclk_hz = 8000000,
     .trans_queue_depth = 10,
     .lcd_cmd_bits = 8,
-    .lcd_param_bits = 8
+    .lcd_param_bits = 8,
+    .flags =
+    {
+      .dc_as_cmd_phase = 0,
+      .dc_low_on_data = 0,
+      .octal_mode = 0,
+      .lsb_first = 0
+    }
   };
 
-  esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST, &io_config, &io_handle);
+  esp_lcd_new_panel_io_spi(
+    (esp_lcd_spi_bus_handle_t)SPI2_HOST,
+    &io_config,
+    &io_handle
+  );
 
 #elif (LT7381_BUS_TYPE == LT7381_BUS_IIC)
 
@@ -90,12 +123,10 @@ void setup()
 
 #endif
 
-
-  // panel configuration
-
-  const esp_lcd_panel_lt7381_config_t vendor_config = {
+  const esp_lcd_panel_lt7381_config_t vendor_config =
+  {
     .wait_gpio_num = GPIO_NUM_NC,
-    .lcd_backlight_pwm = GPIO_NUM_NC,
+    .lcd_backlight_pwm = GPIO_NUM_15,
 
 #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
     .mcu_bit_interface = 16,
@@ -107,15 +138,44 @@ void setup()
     .reset_gpio_num = LCD_RST,
     .color_space = ESP_LCD_COLOR_SPACE_RGB,
     .bits_per_pixel = 16,
+    .flags =
+    {
+      .reset_active_high = 0
+    },
     .vendor_config = (void *)&vendor_config
   };
 
-
   esp_lcd_new_panel_lt7381(io_handle, &panel_config, &lcd_panel_handle);
+  Serial.println("New panel created");
+
+  lcd_panel_handle->reset(lcd_panel_handle);
+  Serial.println("Reset done");
+
   lcd_panel_handle->init(lcd_panel_handle);
+  Serial.println("Init run");
+
   lcd_panel_handle->disp_off(lcd_panel_handle, false);
+
+  eps_lcd_panel_draw_pixel(lcd_panel_handle, 100, 100, 0x8888);
+
+  esp_lcd_panel_draw_square_filled(lcd_panel_handle, 150, 150, 50, 50, 0x8888);
+
+  return;
+  uint8_t random_image[50] =
+  {
+    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
+    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
+    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
+    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
+    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55
+  };
+  lcd_panel_handle->draw_bitmap(lcd_panel_handle, 50, 50, 55, 55, &random_image);
 }
 
 void loop()
 {
+  lcd_panel_handle->disp_off(lcd_panel_handle, false);
+  delay(1000);
+  lcd_panel_handle->disp_off(lcd_panel_handle, true);
+  delay(1000);
 }

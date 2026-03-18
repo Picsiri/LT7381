@@ -9,8 +9,8 @@
 /* ------------------------------ */
 /* ------ Function headers ------ */
 /* ------------------------------ */
-static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel);
 static esp_err_t panel_lt7381_reset(esp_lcd_panel_t *panel);
+static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel);
 static esp_err_t panel_lt7381_del(esp_lcd_panel_t *panel);
 
 static esp_err_t panel_lt7381_draw_bitmap(
@@ -110,6 +110,7 @@ esp_err_t esp_lcd_new_panel_lt7381(
     break;
   }
 
+  lt7381->pwm_gpio_num = vendor_cfg->lcd_backlight_pwm;
   lt7381->io_handle = io_handle;
   lt7381->reset_gpio_num = panel_dev_config->reset_gpio_num;
   lt7381->wait_gpio_num = vendor_cfg->wait_gpio_num;
@@ -136,7 +137,7 @@ esp_err_t esp_lcd_new_panel_lt7381(
       .speed_mode       = LEDC_LOW_SPEED_MODE,
       .duty_resolution  = LT7381_BACKLIGHT_RESOLUTION,
       .timer_num        = LT7381_BACKLIGHT_TIMER,
-      .freq_hz          = 5000,  // PWM frequency, adjust as needed
+      .freq_hz          = LT7381_BACKLIGHT_FREQUENCY,
       .clk_cfg          = LEDC_AUTO_CLK
   };
   ledc_timer_config(&ledc_timer);
@@ -165,11 +166,6 @@ esp_err_t esp_lcd_new_panel_lt7381(
  err:
   if (lt7381)
   {
-    /* tidy up RST and/or WAIT gpio pins */
-    if (lt7381->reset_gpio_num != GPIO_NUM_NC)
-      gpio_reset_pin(lt7381->reset_gpio_num);
-    if (lt7381->wait_gpio_num != GPIO_NUM_NC)
-      gpio_reset_pin(lt7381->wait_gpio_num);
     free(lt7381);
   }
   return ret;
@@ -207,6 +203,34 @@ esp_err_t esp_lcd_panel_set_backlight(esp_lcd_panel_t *panel, uint16_t duty)
   return ret;
 }
 
+esp_err_t eps_lcd_panel_draw_pixel(esp_lcd_panel_t *panel, uint16_t x, uint16_t y, uint16_t color)
+{
+  lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
+
+  lt7381_cursor_xy(lt7381, x,y);
+
+  lt7381_draw_pixel(lt7381, color);
+
+  return ESP_OK;
+}
+
+esp_err_t esp_lcd_panel_draw_square_filled(
+  esp_lcd_panel_t *panel,
+  uint16_t x,
+  uint16_t y,
+  uint16_t w,
+  uint16_t h,
+  uint16_t color)
+{
+  lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
+
+  lt7381_foreground_color(lt7381, color);
+  lt7381_draw_start_xy(lt7381, x, y);
+  lt7381_draw_end_xy(lt7381, x+w, y+h);
+  lt7381_start_square_fill(lt7381);
+
+  return ESP_OK;
+}
 /* ---------------------------------- */
 /* - Interface Function Definitions - */
 /* ---------------------------------- */
@@ -219,14 +243,16 @@ static esp_err_t panel_lt7381_reset(esp_lcd_panel_t *panel)
   if (lt7381->reset_gpio_num != GPIO_NUM_NC)
   {
     /* perform hardware reset */
+    ESP_LOGE(PRINT_TAG, "Performing HW reset");
     gpio_set_level(lt7381->reset_gpio_num, lt7381->reset_level);
-    vTaskDelay(pdMS_TO_TICKS(1));
+    vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(lt7381->reset_gpio_num, !lt7381->reset_level);
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
   else
   {
     /* perform software reset */
+    ESP_LOGE(PRINT_TAG, "Performing SW reset");
     esp_lcd_panel_io_tx_param(io_handle, LT7381_REGISTER_SRR, (uint8_t[]){ 0x01 }, 1u);
     vTaskDelay(pdMS_TO_TICKS(20));
   }
@@ -239,6 +265,8 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
   esp_err_t       ret = ESP_OK;
   uint8_t status;
+
+  ESP_LOGE(PRINT_TAG, "initing started");
   
   // TODO: wrapp all calls on error handler
   ESP_GOTO_ON_ERROR(lt7381_system_wait_ready(lt7381), err, PRINT_TAG, "Panel failed to settle in time. Display unavailable.");
@@ -249,15 +277,23 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   do
   {
     lt7381_status_read(lt7381, &status);
+    ESP_LOGE(PRINT_TAG, "Panel status is %d", status);
+    if (GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) > 0u)
+    {
+      vTaskDelay(pdMS_TO_TICKS(100));
+    }
   }
   while(GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) > 0u);
 
+  ESP_LOGE(PRINT_TAG, "lt7381_pll_init");
   lt7381_pll_init(lt7381);
 
+  ESP_LOGE(PRINT_TAG, "lt7381_SDRAM_init");
   lt7381_SDRAM_init(lt7381);
   
   // commented calls are skipped because they set reset-default values
 
+  ESP_LOGE(PRINT_TAG, "lt7381_tft_panel_setting");
   lt7381_tft_panel_setting(lt7381, CCR_REG_TFT_16_BIT);
  #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
   lt7381_bus_width_setting(lt7381, CCR_REG_BUS_16_BIT);
@@ -269,14 +305,17 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   //lt7381_graphic_or_text_mode(lt7381, ICR_REG_GRAPHIC_MODE);
   //lt7381_memory_select(lt7381, ICR_REG_MEMORY_AS_IMAGE_BUFFER);
 
+  ESP_LOGE(PRINT_TAG, "lt7381_PLCK_polarity");
   lt7381_PLCK_polarity(lt7381, DPCR_REG_PCLK_FALLING_EDGE);
-  lt7381_display_test_on_off(lt7381, DPCR_REG_DISPLAY_TEST_ON);
+  ESP_LOGE(PRINT_TAG, "lt7381_display_test_on_off");
+  lt7381_display_test_on_off(lt7381, DPCR_REG_DISPLAY_TEST_OFF);
   //lt7381_display_vertical_direction(lt7381, DPCR_REG_TOP_TO_BOTTOM);
   //lt7381_display_color_sequence(lt7381, DPCR_REG_COLOR_SEQ_RGB);
 
   //lt7381_hsync_polarity(lt7381, PCSR_REG_HSYNC_LOW_ACTIVE);
   //lt7381_vsync_polarity(lt7381, PCSR_REG_VSYNC_LOW_ACTIVE);
   lt7381_pde_polarity(lt7381, PCSR_REG_PDE_LOW_ACTIVE);
+
 
   lt7381_lcd_horizontal_width_vertical_height(lt7381, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT);
   lt7381_lcd_horizontal_non_display(lt7381, LT7381_LCD_HORIZONTAL_NON_DISP);
@@ -295,20 +334,31 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
 
   lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_ON);
 
+  lt7381_main_image_start_address(lt7381, 0);
+  lt7381_main_image_width(lt7381, LT7381_LCD_WIDTH);
+
+  lt7381_main_window_start_xy(lt7381, 0, 0);
+
+  lt7381_canvas_image_start_address(lt7381, 0);
+  lt7381_canvas_image_width(lt7381, LT7381_LCD_WIDTH);
+
+  lt7381_active_window_xy(lt7381, 0, 0);
+  lt7381_active_window_wh(lt7381, LT7381_LCD_WIDTH, LT7381_LCD_HEIGHT);
+
+  return ESP_OK;
+
 /* ------------------------ */
 /* ---- ERROR HANDLING ---- */
 /* ------------------------ */
 
 err:
+
+  ESP_LOGE(PRINT_TAG, "Error during initialization, code: %d", ret);
   if (lt7381)
   {
-    /* tidy up RST and/or WAIT gpio pins */
-    if (lt7381->reset_gpio_num != GPIO_NUM_NC)
-      gpio_reset_pin(lt7381->reset_gpio_num);
-    if (lt7381->wait_gpio_num != GPIO_NUM_NC)
-      gpio_reset_pin(lt7381->wait_gpio_num);
     free(lt7381);
   }
+
   return ret;
 }
 
@@ -348,12 +398,7 @@ static esp_err_t panel_lt7381_draw_bitmap(esp_lcd_panel_t *panel, int x_start, i
   
   const uint8_t *data = (const uint8_t *)color_data;
 
-  lt7381_cmd_write(lt7381, LT7381_REGISTER_MRWDP);
-  for (uint32_t i = 0u; i < len; i++)
-  {
-    lt7381_data_write(lt7381, data[i]);
-    lt7381_wait(lt7381);
-  }
+  lt7381_draw_picture(lt7381, data, len);
   
   return ESP_OK;
 }
@@ -386,16 +431,16 @@ static esp_err_t panel_lt7381_invert_color(esp_lcd_panel_t *panel, bool invert_c
   return ESP_ERR_NOT_SUPPORTED;
 }
 
-static esp_err_t panel_lt7381_disp_off(esp_lcd_panel_t *panel, bool on)
+static esp_err_t panel_lt7381_disp_off(esp_lcd_panel_t *panel, bool off)
 {
   lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
 
-  if (on)
+  if (off)
   {
-    return lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_ON);
+    return lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_OFF);
   }
   else
   {
-    return lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_OFF);
+    return lt7381_display_on_off(lt7381, DPCR_REG_DISPLAY_ON);
   }
 }

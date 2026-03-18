@@ -25,7 +25,8 @@
 #define LT7381_BACKLIGHT_INT_PWM        1 /**< use the LT7381's PWM generator */
 #define LT7381_BACKLIGHT_EXT_PWM        2 /**< use an externally applied PWM */
 
-#define LT7381_BACKLIGHT_RESOLUTION     16  
+#define LT7381_BACKLIGHT_RESOLUTION     8
+#define LT7381_BACKLIGHT_FREQUENCY      20000
 #define LT7381_BACKLIGHT_TIMER          LEDC_TIMER_0
 #define LT7381_BACKLIGHT_MODE           LEDC_LOW_SPEED_MODE
 #define LT7381_BACKLIGHT_CHANNEL        LEDC_CHANNEL_2
@@ -63,7 +64,7 @@
 #define LT7381_SDRAR_DEFAULT            0x29 /* datasheet says 0x20 but this was in example from the OEM */
 #define LT7381_SDRMD_DEFAULT            0x03 /* CAS:2=0x02 ACAS:3=0x03 */
 
-#define LT7381_SDRAM_REFRESH_TIME       0x01D2 /* comes from vendor example, more might be possible */
+#define LT7381_SDRAM_REFRESH_TIME       0x01E6 /* comes from vendor example, more might be possible */
 #define LT7381_SDRAM_BYTE_PER_PIXEL     3u
 #define LT7381_SDRAM_LAYER_STEP         LT7381_SDRAM_BYTE_PER_PIXEL * LT7381_LCD_WIDTH * LT7381_LCD_HEIGHT
 #define LT7381_SDRAM_LAYER_0            0u

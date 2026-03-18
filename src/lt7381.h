@@ -62,7 +62,9 @@ extern esp_err_t esp_lcd_new_panel_lt7381(
 */
 extern esp_err_t esp_lcd_panel_set_backlight(esp_lcd_panel_t *panel, uint16_t duty);
 
+extern esp_err_t eps_lcd_panel_draw_pixel(esp_lcd_panel_t *panel, uint16_t x, uint16_t y, uint16_t color);
 
+extern esp_err_t esp_lcd_panel_draw_square_filled(esp_lcd_panel_t *panel, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 #ifdef __cplusplus
 }
 #endif

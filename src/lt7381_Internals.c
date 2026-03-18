@@ -37,7 +37,7 @@ esp_err_t lt7381_wait(lt7381_panel_t *lt)
   
   if (!passed)
   {
-    ESP_LOGE(PRINT_TAG, "lt7381 Timeout!");
+    ESP_LOGE(PRINT_TAG, "lt7381_wait timeout!");
     ret = ESP_ERR_TIMEOUT;
   }
 
@@ -46,21 +46,29 @@ esp_err_t lt7381_wait(lt7381_panel_t *lt)
 
 esp_err_t lt7381_cmd_write(lt7381_panel_t *lt, uint8_t cmd)
 {
+  uint8_t packet[2];
+  packet[0] = LT7381_CMD_WRITE_COMMAND;
+  packet[1] = cmd;
+  
   return esp_lcd_panel_io_tx_param(
     lt->io_handle,
-    LT7381_CMD_WRITE_COMMAND,
-    &cmd,
-    1
+    -1,
+    &packet,
+    2
   );
 }
 
 esp_err_t lt7381_data_write(lt7381_panel_t *lt, uint8_t data)
 {
+  uint8_t packet[2];
+  packet[0] = LT7381_CMD_WRITE_DATA;
+  packet[1] = data;
+
   return esp_lcd_panel_io_tx_param(
     lt->io_handle,
-    LT7381_CMD_WRITE_DATA,
-    &data,
-    1
+    -1,
+    &packet,
+    2
   );
 }
 
@@ -91,6 +99,8 @@ esp_err_t lt7381_status_read(lt7381_panel_t *lt, uint8_t *status)
 esp_err_t lt7381_reg_write(lt7381_panel_t *lt, uint8_t reg, uint8_t val)
 {
   esp_err_t ret;
+  
+  ESP_LOGE(PRINT_TAG, "writing to %d val %d", reg, val);
 
   ret = lt7381_cmd_write(lt, reg);
   if (ret != ESP_OK) return ret;
@@ -100,12 +110,19 @@ esp_err_t lt7381_reg_write(lt7381_panel_t *lt, uint8_t reg, uint8_t val)
 
 esp_err_t lt7381_reg_read(lt7381_panel_t *lt, uint8_t reg, uint8_t *val)
 {
-  lt7381_cmd_write(lt, reg);
-  return lt7381_data_read(lt, val);
+  esp_err_t ret;
+
+  ret = lt7381_cmd_write(lt, reg);
+  if (ret != ESP_OK) return ret;
+
+  ret = lt7381_data_read(lt, val);
+
+  return ret;
 }
 
 esp_err_t lt7381_system_wait_ready(lt7381_panel_t *lt)
 {
+  esp_err_t ret;
   uint8_t status;
   uint8_t ccr;
   uint8_t retry = 0u;
@@ -113,15 +130,18 @@ esp_err_t lt7381_system_wait_ready(lt7381_panel_t *lt)
 
   while (1)
   {
-    ESP_ERROR_CHECK(lt7381_status_read(lt, &status));
+    ret |= lt7381_status_read(lt, &status);
+    ESP_LOGE(PRINT_TAG, "Status is %d", status);
 
     if (GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) == 0u)
     {
       /* one might think lt7381_reg_read() can be used but these commands are slow and take time, delays are needed */
       vTaskDelay(pdMS_TO_TICKS(2));
-      ESP_ERROR_CHECK(lt7381_cmd_write(lt, LT7381_REGISTER_CCR));
+      ret |= lt7381_cmd_write(lt, LT7381_REGISTER_CCR);
       vTaskDelay(pdMS_TO_TICKS(2));
-      ESP_ERROR_CHECK(lt7381_data_read(lt, &ccr));
+      ret |= lt7381_data_read(lt, &ccr);
+
+      ESP_LOGE(PRINT_TAG, "CCR is %d", ccr);
 
       if (GET_BIT(ccr, CCR_REG_PLL_READY_BIT) > 0u)
       {
@@ -130,9 +150,9 @@ esp_err_t lt7381_system_wait_ready(lt7381_panel_t *lt)
       else
       {
         vTaskDelay(pdMS_TO_TICKS(2));
-        ESP_ERROR_CHECK(lt7381_cmd_write(lt, LT7381_REGISTER_CCR));
+        ret |= lt7381_cmd_write(lt, LT7381_REGISTER_CCR);
         vTaskDelay(pdMS_TO_TICKS(2));
-        ESP_ERROR_CHECK(lt7381_data_write(lt, BIT_TO_VAL(CCR_REG_PLL_READY_BIT)));
+        ret |= lt7381_data_write(lt, BIT_TO_VAL(CCR_REG_PLL_READY_BIT));
       }
     }
     else
@@ -154,6 +174,8 @@ esp_err_t lt7381_system_wait_ready(lt7381_panel_t *lt)
       }
     }
   }
+
+  return ret;
 }
 
 esp_err_t lt7381_pll_init(lt7381_panel_t *lt)
@@ -285,12 +307,13 @@ esp_err_t lt7381_wait_sdram_ready(lt7381_panel_t *lt)
     now = esp_timer_get_time();
     if ((now - start) > LT7381_TIMEOUT_US)
     {
-      ESP_LOGE(PRINT_TAG, "lt7381 Timeout!");
+      ESP_LOGE(PRINT_TAG, "lt7381_wait_sdram timeout!");
       return ESP_ERR_TIMEOUT;
     }
   }
   while (GET_BIT(status, STAT_REG_DISPLAY_RAM_READY_BIT) == 0u);
 
+  ESP_LOGE(PRINT_TAG, "lt7381_wait_sdram ready!");
   return ESP_OK;
 }
 
@@ -375,7 +398,12 @@ esp_err_t lt7381_tft_panel_setting(lt7381_panel_t *lt, uint8_t setting)
     SET_BIT(regdata, CCR_REG_PANEL_IF_SETTING_HIGH);
   }
 
+  ESP_LOGE(PRINT_TAG, "writing CCR %d", regdata);
+
   ret |= lt7381_data_write(lt, regdata);
+
+  lt7381_data_read(lt, &regdata);
+  ESP_LOGE(PRINT_TAG, "read CCR %d", regdata);
 
   return ret;
 }
@@ -396,6 +424,7 @@ esp_err_t lt7381_bus_width_setting(lt7381_panel_t *lt, uint8_t setting)
     SET_BIT(regdata, CCR_REG_BUS_WIDTH_SELECT_BIT);
   }
 
+  ESP_LOGE(PRINT_TAG, "writing CCR as %d", regdata);
   ret |= lt7381_data_write(lt, regdata);
 
   return ret;
@@ -474,6 +503,35 @@ esp_err_t lt7381_memory_select(lt7381_panel_t *lt, uint8_t setting)
   return ret;
 }
 
+esp_err_t lt7381_draw_pixel(lt7381_panel_t *lt, uint16_t color)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_cmd_write(lt, LT7381_REGISTER_MRWDP);
+
+  ret |= lt7381_wait(lt);
+  ret |= lt7381_data_write(lt, color);
+  ret |= lt7381_wait(lt);
+  ret |= lt7381_data_write(lt, color >> 8);
+
+  return ret;
+}
+
+esp_err_t lt7381_draw_picture(lt7381_panel_t *lt, const uint8_t* color, uint32_t len)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_cmd_write(lt, LT7381_REGISTER_MRWDP);
+
+  for (uint32_t i = 0u; i < len; i++)
+  {
+    ret |= lt7381_wait(lt);
+    ret |= lt7381_data_write(lt, color[i]);
+  }
+
+  return ret;
+}
+
 esp_err_t lt7381_select_main_image_color_depth(lt7381_panel_t *lt, uint8_t setting)
 {
   esp_err_t ret = ESP_OK;
@@ -486,7 +544,7 @@ esp_err_t lt7381_select_main_image_color_depth(lt7381_panel_t *lt, uint8_t setti
 
   regdata |= setting << 2;
 
-  ret |= lt7381_reg_write(lt, LT7381_REGISTER_MPWCTR, regdata);
+  ret |= lt7381_data_write(lt, regdata);
 
   return ret;
 }
@@ -1071,5 +1129,63 @@ esp_err_t lt7381_cursor_xy(lt7381_panel_t *lt, uint16_t x, uint16_t y)
     ret |= lt7381_reg_write(lt, LT7381_REGISTER_CURV_HIGH, y >> 8);
   }
   
+  return ret;
+}
+
+esp_err_t lt7381_draw_start_xy(lt7381_panel_t *lt, uint16_t wx, uint16_t hy)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLHSR_LOW,  wx & 0xFF);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLHSR_HIGH, (wx >> 8) & 0x1F);
+
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLVSR_LOW,  hy & 0xFF);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLVSR_HIGH, (hy >> 8) & 0x1F);
+
+  return ret;
+}
+
+esp_err_t lt7381_draw_end_xy(lt7381_panel_t *lt, uint16_t wx, uint16_t hy)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLHER_LOW,  wx & 0xFF);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLHER_HIGH, (wx >> 8) & 0x1F);
+
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLVER_LOW,  hy & 0xFF);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_DLVER_HIGH, (hy >> 8) & 0x1F);
+
+  return ret;
+}
+
+esp_err_t lt7381_start_square_fill(lt7381_panel_t *lt)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_cmd_write(lt, LT7381_REGISTER_DCR1);
+  ret |= lt7381_data_write(lt, DCR_REG_START_SQUARE_FILL);
+
+  return ret;
+}
+
+esp_err_t lt7381_foreground_color(lt7381_panel_t *lt, uint16_t color)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_FGCR, color >> 8);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_FGCG, color >> 3);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_FGCB, color << 3);
+
+  return ret;
+}
+
+esp_err_t lt7381_background_color(lt7381_panel_t *lt, uint16_t color)
+{
+  esp_err_t ret = ESP_OK;
+
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_BGCR, color >> 8);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_BGCG, color >> 3);
+  ret |= lt7381_reg_write(lt, LT7381_REGISTER_BGCB, color << 3);
+
   return ret;
 }

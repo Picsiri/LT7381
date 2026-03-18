@@ -153,6 +153,8 @@ extern "C" {
 #define AW_COLOR_REG_16BPP_MODE         0b01
 #define AW_COLOR_REG_24BPP_MODE         0b10
 
+/* 0x76 Draw Control Register */
+#define DCR_REG_START_SQUARE_FILL       0xE0
 
 
 /* ------------------------------ */
@@ -269,14 +271,14 @@ extern "C" {
 #define LT7381_REGISTER_F_CURY_LOW      0x65
 #define LT7381_REGISTER_F_CURY_HIGH     0x66
 #define LT7381_REGISTER_DCR0            0x67
-#define LT7381_REGISTER_DLHSR_LOW       0x68
-#define LT7381_REGISTER_DLHSR_HIGH      0x69
-#define LT7381_REGISTER_DLVSR_LOW       0x6A
-#define LT7381_REGISTER_DLVSR_HIGH      0x6B
-#define LT7381_REGISTER_DLHER_LOW       0x6C
-#define LT7381_REGISTER_DLHER_HIGH      0x6D
-#define LT7381_REGISTER_DLVER_LOW       0x6E
-#define LT7381_REGISTER_DLVER_HIGH      0x6F
+#define LT7381_REGISTER_DLHSR_LOW       0x68 /**< Draw Start X */
+#define LT7381_REGISTER_DLHSR_HIGH      0x69 /**< Draw Start X */
+#define LT7381_REGISTER_DLVSR_LOW       0x6A /**< Draw Start Y */
+#define LT7381_REGISTER_DLVSR_HIGH      0x6B /**< Draw Start Y */
+#define LT7381_REGISTER_DLHER_LOW       0x6C /**< Draw End X */
+#define LT7381_REGISTER_DLHER_HIGH      0x6D /**< Draw End X */
+#define LT7381_REGISTER_DLVER_LOW       0x6E /**< Draw End Y */
+#define LT7381_REGISTER_DLVER_HIGH      0x6F /**< Draw End Y */
 
 #define LT7381_REGISTER_DTPH_LOW        0x70
 #define LT7381_REGISTER_DTPH_HIGH       0x71
@@ -284,7 +286,7 @@ extern "C" {
 #define LT7381_REGISTER_DTPV_HIGH       0x73
 /* #define LT7381_REGISTER 0x74 */
 /* #define LT7381_REGISTER 0x75 */
-#define LT7381_REGISTER_DCR1            0x76
+#define LT7381_REGISTER_DCR1            0x76 /**< Draw Control Register */
 #define LT7381_REGISTER_ELL_A_LOW       0x77
 #define LT7381_REGISTER_ELL_A_HIGH      0x78
 #define LT7381_REGISTER_ELL_B_LOW       0x79
@@ -382,12 +384,12 @@ extern "C" {
 
 #define LT7381_REGISTER_FLDR            0xD0
 #define LT7381_REGISTER_F2FSSR          0xD1
-#define LT7381_REGISTER_FGCR            0xD2
-#define LT7381_REGISTER_FGCG            0xD3
-#define LT7381_REGISTER_FGCB            0xD4
-#define LT7381_REGISTER_BGCR            0xD5
-#define LT7381_REGISTER_BGCG            0xD6
-#define LT7381_REGISTER_BGCB            0xD7
+#define LT7381_REGISTER_FGCR            0xD2 /**< Foreground Color Register - Red*/
+#define LT7381_REGISTER_FGCG            0xD3 /**< Foreground Color Register - Green */
+#define LT7381_REGISTER_FGCB            0xD4 /**< Foreground Color Register - Blue */
+#define LT7381_REGISTER_BGCR            0xD5 /**< Background Color Register - Red */
+#define LT7381_REGISTER_BGCG            0xD6 /**< Background Color Register - Green */
+#define LT7381_REGISTER_BGCB            0xD7 /**< Background Color Register - Blue */
 /* #define LT7381_REGISTER 0xD8 */
 /* #define LT7381_REGISTER 0xD9 */
 /* #define LT7381_REGISTER 0xDA */
