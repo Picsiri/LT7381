@@ -135,32 +135,20 @@ void setup()
   lcd_panel_handle->reset(lcd_panel_handle);
   lcd_panel_handle->init(lcd_panel_handle);
   Serial.println("Init run");
+  lcd_panel_handle->disp_off(lcd_panel_handle, false);
 
   esp_lcd_panel_display_test(lcd_panel_handle, 1u);
   delay(1000);
   esp_lcd_panel_display_test(lcd_panel_handle, 0u);
-
-  lcd_panel_handle->disp_off(lcd_panel_handle, false);
-
   esp_lcd_panel_clear(lcd_panel_handle, 0x0000);
+  delay(1000);
 
-  eps_lcd_panel_draw_pixel(lcd_panel_handle, 100, 100, 0x8888);
-
-  esp_lcd_panel_draw_square_filled(lcd_panel_handle, 150, 150, 50, 50, 0x8888);
-  
-  esp_lcd_panel_draw_square_filled(lcd_panel_handle, 300, 200, 300, 200, 0xf000);
-
-  uint8_t random_image[50] =
-  {
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
-    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55
-  };
-  lcd_panel_handle->draw_bitmap(lcd_panel_handle, 50, 50, 55, 55, &random_image);
-
-  lcd_panel_handle->draw_bitmap(lcd_panel_handle, 75, 75, 80, 80, &random_image);
+  esp_lcd_panel_draw_square_filled(lcd_panel_handle, 100, 100, 100, 100, 0xf800);
+  delay(1000);
+  esp_lcd_panel_draw_square_filled(lcd_panel_handle, 200, 200, 100, 100, 0x07e0);
+  delay(1000);
+  esp_lcd_panel_draw_square_filled(lcd_panel_handle, 300, 300, 100, 100, 0x001f);
+  delay(1000);
 }
 
 void loop()
