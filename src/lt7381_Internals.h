@@ -67,7 +67,7 @@ typedef struct {
 esp_err_t lt7381_wait(lt7381_panel_t *lt);
 esp_err_t lt7381_cmd_write(lt7381_panel_t *lt, uint8_t cmd);
 esp_err_t lt7381_data_write(lt7381_panel_t *lt, uint8_t data);
-esp_err_t lt7381_color_write(lt7381_panel_t *lt, uint8_t data, uint8_t n);
+esp_err_t lt7381_batch_write(lt7381_panel_t *lt, uint8_t *batch, uint8_t size);
 esp_err_t lt7381_data_read(lt7381_panel_t *lt, uint8_t *data);
 esp_err_t lt7381_status_read(lt7381_panel_t *lt, uint8_t *status);
 

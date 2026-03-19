@@ -1,5 +1,6 @@
 #include "lt7381.h"
 #include "lt7381_Internals.h"
+#include <string.h>
 
 /* ------------------------------------------------------------------ */
 /* low-level helpers                                                  */
@@ -72,19 +73,17 @@ esp_err_t lt7381_data_write(lt7381_panel_t *lt, uint8_t data)
   );
 }
 
-esp_err_t lt7381_color_write(lt7381_panel_t *lt, uint8_t data, uint8_t n)
+esp_err_t lt7381_batch_write(lt7381_panel_t *lt, uint8_t *batch, uint8_t size)
 {
-  /*
-  uint8_t packet[n+1];
-  packet[0] = LT7381_CMD_WRITE_DATA;
-  memcpy(&packet[1], data, n);
-  */
+  batch[0] = LT7381_CMD_WRITE_DATA;
 
+  // TODO: think about if DMA in would have any benefit?
+  //     esp_lcd_panel_io_tx_color()
   return esp_lcd_panel_io_tx_param(
     lt->io_handle,
-    LT7381_CMD_WRITE_DATA,
-    data,
-    1
+    -1,
+    batch,
+    size
   );
 }
 
@@ -536,17 +535,23 @@ esp_err_t lt7381_draw_pixel(lt7381_panel_t *lt, uint16_t color)
 esp_err_t lt7381_draw_picture(lt7381_panel_t *lt, const uint8_t* color, uint32_t len)
 {
   esp_err_t ret = ESP_OK;
-  const uint16_t CHUNK_SIZE = 256u;
 
   ret |= lt7381_cmd_write(lt, LT7381_REGISTER_MRWDP);
+  uint8_t data[LT7381_IMAGE_STREAM_CHUNK_SIZE + 1];
 
-  for (uint32_t i = 0u; i < len; i++)
+  for (uint32_t i = 0u; i < len; i += LT7381_IMAGE_STREAM_CHUNK_SIZE)
   {
-    //ret |= lt7381_wait(lt);
-    ret |= lt7381_data_write(lt, color[i]);
-    //ret |= lt7381_color_write(lt, color[i], 1u);
+    /* leave first byte empty for header */
+    uint32_t chunk = len - i;
+    if (chunk > LT7381_IMAGE_STREAM_CHUNK_SIZE) {
+        chunk = LT7381_IMAGE_STREAM_CHUNK_SIZE;
+    }
+    
+    memcpy(&data[1], &color[i], chunk);
+    
+    ret |= lt7381_batch_write(lt, data, chunk + 1);
   }
-  
+
   return ret;
 }
 

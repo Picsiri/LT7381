@@ -9,6 +9,8 @@
 
 #define LT7381_BUS_TYPE                 LT7381_BUS_SPI
 
+#define LT7381_IMAGE_STREAM_CHUNK_SIZE  64
+
 /* display size */
 
 #define LT7381_LCD_WIDTH                800
