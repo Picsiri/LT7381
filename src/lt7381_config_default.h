@@ -42,17 +42,30 @@
 #define LT7381_RETRY_LIMIT_FAIL         25
 
 /* clocks */
-#define LT7381_PLL_OD_SCLK              2
-#define LT7381_PLL_OD_CCLK              2
-#define LT7381_PLL_OD_MCLK              2
+/*  example configuration for 800x480, 10MHz XI
+ *  PCLK  -   OD        11b -   2 - 0x02
+ *  25MHz -   R       1010b -  10 - 0x0A
+ *        -   N   01100100b - 100 - 0x64
+ * 
+ *  MCLK  -   OD        11b -   2 - 0x02
+ *  50MHz -   R       1010b -  10 - 0x0A
+ *        -   N   11001000b - 200 - 0xC8
+ * 
+ *  CCLK  -   OD        11b -   2 - 0x02
+ *  50MHz -   R       1010b -  10 - 0x0A
+ *        -   N   11001000b - 200 - 0xC8
+ */
+#define LT7381_PLL_OD_SCLK              0x02
+#define LT7381_PLL_OD_CCLK              0x02
+#define LT7381_PLL_OD_MCLK              0x02
 
-#define LT7381_PLL_R_SCLK               5
-#define LT7381_PLL_R_CCLK               5
-#define LT7381_PLL_R_MCLK               5
+#define LT7381_PLL_R_SCLK               0x0A
+#define LT7381_PLL_R_CCLK               0x0A
+#define LT7381_PLL_R_MCLK               0x0A
 
-#define LT7381_PLL_N_SCLK               60
-#define LT7381_PLL_N_CCLK               100
-#define LT7381_PLL_N_MCLK               100
+#define LT7381_PLL_N_SCLK               0x64
+#define LT7381_PLL_N_CCLK               0xC8
+#define LT7381_PLL_N_MCLK               0xC8
 
 /* pwm s - setting full scale for panels with internal pwm */
 // disable this in your config to save power

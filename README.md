@@ -4,13 +4,15 @@ Driver library for the **LT7381 display controller** used in TFT modules such as
 
 The LT7381 controller is similar to the LT768x family, which itself is very close in architecture to the RA8876 controller.
 
-This library provides a clean and documented driver implementation designed for ESP32 platforms using the ESP-IDF `esp_lcd` subsystem.
+This library aims (might never achieve it though) to provides a clean and documented driver implementation designed for ESP32 platforms using the ESP-IDF `esp_lcd` subsystem.
 
 This library was created primarily to support the **ER-TFT-MC070-4 display module**, but it may also work with other displays using the same LT7381 controller.
 
-The driver currently focuses on **framebuffer streaming**, making it compatible with rendering engines such as LVGL.
+The OEM of the module provides an example code but it is based on Arduino. I have rewritten this example code in C, relying only on esp-idf, dropping almost all GPU functionality (built-in drawing functions) as I intend to use LVGL.
 
-Key design choices:
+Thus, the project currently focuses on **framebuffer streaming**, and there is an example implementation of LVGL x LT7381 in the examples folder.
+
+Again, in bullet points:
 
 - Uses ESP-IDF `esp_lcd` as the bus abstraction
 - Designed to integrate easily with LVGL
@@ -36,46 +38,58 @@ Because of this similarity, the library **may work with other LT768x / RA8876 ba
 # Interfaces
 
 This library relies on the **esp_lcd interface layer**.
-
 Because of this, the display can theoretically be used over:
 
 - SPI
-- I80 parallel
-- Other interfaces supported by esp_lcd
+- I80 (8bit & 16bit)
+- I2C
 
-However:
+However,
+**only SPI has been tested so far.**
 
-**Only SPI has been tested so far.**
+Currently, I can stream the whole screen [**800** (px. width) **x 480** (px. height) **x 2** (bytes per pixel)] in about **0.1 seconds**. Further speed is not needed for me this time, but from what I see, this could relatively easily be doubled with further SPI optimization and then x10-ed with i80.
+
+One might even hit the LT7381's internal limit. It is recommended to check if input buffer has space before streaming the next byte but this is wasteful.  
+I am skipping this check and have seen no issues, thou one can expect problems if the streaming speed is further increased.
+
 
 # Software Architecture
 
-Rendering pipeline:
+The drivers has the following source files:
+```
+lt7381.c
+lt7381.h
+lt7381_config_default.h
+lt7381_Internals.c
+lt7381_Internals.h
+lt7381_Registers.h
+```
+- **lt7381** contains the public facing functions intended for users of the driver.
+- **lt7381_config_default** contains a default configuration, set up in a way that its simple for users to overwrite it if they wish.
+- **lt7381_Internals** contains the internal functions intended for the driver's internals only.
+- **lt7381_Registers** contains register map, bit field definitions and helper macros.
 
-Application  
-↓  
-Graphics library (LVGL optional)  
-↓  
-LT7381 driver  
-↓  
-ESP-IDF `esp_lcd`  
-↓  
-SPI / I80 bus  
-↓  
-Display controller VRAM
-
-The driver does **not rely on the hardware accelerator functions** of the LT7381.  
-Instead it focuses on **efficient pixel streaming**, making it compatible with modern GUI frameworks.
+The arduino dependency has been minimized but not gone. The driver is based on esp-idf only, though on **version 4.4.7**, the latest esp-idf version included in arduinoespressif32 framework at the time of writing this.
 
 # Example
 
-PlatformIO example projects included:
+PlatformIO example projects included under
+```
+├───examples
+│   ├───lvgl
+│   │   └───src
+│   └───test
+│       └───src
+```
 
 
+ - **test** displays a test screen, some color squares and a bitmap drawn by me :)
+ 
+    [![Watch the video](https://img.youtube.com/vi/SUz6q_UQgxw/default.jpg)](https://youtu.be/SUz6q_UQgxw)
 
- - examples/test displays a bitmap on the display
+ - **lvgl** shows an LVGL compatible implementation with some minimal features
 
- - examples/lvgl shows an lvgl compatible implementation
-
+    [![Watch the video](https://img.youtube.com/vi/SUz6q_UQgxw/default.jpg)](https://youtu.be/SUz6q_UQgxw)
 # Installation
 
 Using PlatformIO:
@@ -130,9 +144,8 @@ SPI wiring:
 
 Resolution: 800x480  
 Color depth: RGB565  
-Frames per sec: ?  
+Flush time: 400 ms  
+Frames per sec: ~3  
 
-Typical SPI configuration:
-
-SPI clock: <insert> MHz  
-Flush time: <insert> ms
+Typical SPI configuration:  
+SPI clock: 40 MHz 

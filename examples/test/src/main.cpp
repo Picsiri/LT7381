@@ -64,7 +64,7 @@ void setup()
     .sclk_io_num = LCD_SPI_CLK,
     .quadwp_io_num = -1,
     .quadhd_io_num = -1,
-    .max_transfer_sz = 200 * 80 * sizeof(uint16_t),
+    .max_transfer_sz = LT7381_IMAGE_STREAM_CHUNK_SIZE + 10,
   };
 
   ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO));
@@ -75,7 +75,7 @@ void setup()
     .dc_gpio_num = LCD_DC,
     .spi_mode = SPI_MODE0,
     .pclk_hz = 40000000,
-    .trans_queue_depth = 64,
+    .trans_queue_depth = 16,
     .lcd_cmd_bits = 8,
     .lcd_param_bits = 8,
     .flags =

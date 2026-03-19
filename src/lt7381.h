@@ -5,11 +5,9 @@
 #ifndef __LT7381_H__
 #define __LT7381_H__
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /* include user config if available */
 #if __has_include("lt7381_config.h")
@@ -22,6 +20,14 @@ extern "C" {
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_interface.h"
+
+typedef struct {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+} color_24bpp_t;
+
+typedef uint16_t color_16bpp_t;
 
 /**
  * @brief Vendor specific configuration structure for panel device
@@ -73,6 +79,5 @@ extern esp_err_t esp_lcd_panel_clear(esp_lcd_panel_t *panel, uint16_t color);
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif
