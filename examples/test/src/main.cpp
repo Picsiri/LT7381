@@ -74,8 +74,8 @@ void setup()
     .cs_gpio_num = LCD_CS,
     .dc_gpio_num = LCD_DC,
     .spi_mode = SPI_MODE0,
-    .pclk_hz = 8000000,
-    .trans_queue_depth = 10,
+    .pclk_hz = 40000000,
+    .trans_queue_depth = 64,
     .lcd_cmd_bits = 8,
     .lcd_param_bits = 8,
     .flags =
@@ -132,13 +132,13 @@ void setup()
   };
 
   esp_lcd_new_panel_lt7381(io_handle, &panel_config, &lcd_panel_handle);
-  Serial.println("New panel created");
-
   lcd_panel_handle->reset(lcd_panel_handle);
-  Serial.println("Reset done");
-
   lcd_panel_handle->init(lcd_panel_handle);
   Serial.println("Init run");
+
+  esp_lcd_panel_display_test(lcd_panel_handle, 1u);
+  delay(1000);
+  esp_lcd_panel_display_test(lcd_panel_handle, 0u);
 
   lcd_panel_handle->disp_off(lcd_panel_handle, false);
 

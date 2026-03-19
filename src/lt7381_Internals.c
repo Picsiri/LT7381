@@ -53,7 +53,7 @@ esp_err_t lt7381_cmd_write(lt7381_panel_t *lt, uint8_t cmd)
   return esp_lcd_panel_io_tx_param(
     lt->io_handle,
     -1,
-    &packet,
+    packet,
     2
   );
 }
@@ -67,8 +67,24 @@ esp_err_t lt7381_data_write(lt7381_panel_t *lt, uint8_t data)
   return esp_lcd_panel_io_tx_param(
     lt->io_handle,
     -1,
-    &packet,
+    packet,
     2
+  );
+}
+
+esp_err_t lt7381_color_write(lt7381_panel_t *lt, uint8_t data, uint8_t n)
+{
+  /*
+  uint8_t packet[n+1];
+  packet[0] = LT7381_CMD_WRITE_DATA;
+  memcpy(&packet[1], data, n);
+  */
+
+  return esp_lcd_panel_io_tx_param(
+    lt->io_handle,
+    LT7381_CMD_WRITE_DATA,
+    data,
+    1
   );
 }
 
@@ -520,15 +536,17 @@ esp_err_t lt7381_draw_pixel(lt7381_panel_t *lt, uint16_t color)
 esp_err_t lt7381_draw_picture(lt7381_panel_t *lt, const uint8_t* color, uint32_t len)
 {
   esp_err_t ret = ESP_OK;
+  const uint16_t CHUNK_SIZE = 256u;
 
   ret |= lt7381_cmd_write(lt, LT7381_REGISTER_MRWDP);
 
   for (uint32_t i = 0u; i < len; i++)
   {
-    ret |= lt7381_wait(lt);
+    //ret |= lt7381_wait(lt);
     ret |= lt7381_data_write(lt, color[i]);
+    //ret |= lt7381_color_write(lt, color[i], 1u);
   }
-
+  
   return ret;
 }
 

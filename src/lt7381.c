@@ -203,6 +203,15 @@ esp_err_t esp_lcd_panel_set_backlight(esp_lcd_panel_t *panel, uint16_t duty)
   return ret;
 }
 
+esp_err_t esp_lcd_panel_display_test(esp_lcd_panel_t *panel, uint8_t on)
+{
+  lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
+
+  lt7381_display_test_on_off(lt7381, on);
+
+  return ESP_OK;
+}
+
 esp_err_t eps_lcd_panel_draw_pixel(esp_lcd_panel_t *panel, uint16_t x, uint16_t y, uint16_t color)
 {
   lt7381_panel_t *lt7381 = __containerof(panel, lt7381_panel_t, esp_lcd_panel);
@@ -298,15 +307,11 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   }
   while(GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) > 0u);
 
-  ESP_LOGE(PRINT_TAG, "lt7381_pll_init");
   lt7381_pll_init(lt7381);
-
-  ESP_LOGE(PRINT_TAG, "lt7381_SDRAM_init");
   lt7381_SDRAM_init(lt7381);
   
   // commented calls are skipped because they set reset-default values
 
-  ESP_LOGE(PRINT_TAG, "lt7381_tft_panel_setting");
   lt7381_tft_panel_setting(lt7381, CCR_REG_TFT_16_BIT);
  #if (LT7381_BUS_TYPE == LT7381_BUS_I80)
   lt7381_bus_width_setting(lt7381, CCR_REG_BUS_16_BIT);
@@ -318,9 +323,7 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   //lt7381_graphic_or_text_mode(lt7381, ICR_REG_GRAPHIC_MODE);
   //lt7381_memory_select(lt7381, ICR_REG_MEMORY_AS_IMAGE_BUFFER);
 
-  ESP_LOGE(PRINT_TAG, "lt7381_PLCK_polarity");
   lt7381_PLCK_polarity(lt7381, DPCR_REG_PCLK_FALLING_EDGE);
-  //lt7381_display_test_on_off(lt7381, DPCR_REG_DISPLAY_TEST_OFF);
   //lt7381_display_vertical_direction(lt7381, DPCR_REG_TOP_TO_BOTTOM);
   //lt7381_display_color_sequence(lt7381, DPCR_REG_COLOR_SEQ_RGB);
   //lt7381_hsync_polarity(lt7381, PCSR_REG_HSYNC_LOW_ACTIVE);
