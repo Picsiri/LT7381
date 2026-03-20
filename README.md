@@ -89,7 +89,7 @@ PlatformIO example projects included under
 
  - **lvgl** shows an LVGL compatible implementation with some minimal features
 
-    [![Watch the video](https://img.youtube.com/vi/SUz6q_UQgxw/default.jpg)](https://youtu.be/SUz6q_UQgxw)
+    [![Watch the video](https://img.youtube.com/vi/oyc7b4KoQEg/default.jpg)](https://youtu.be/oyc7b4KoQEg)
 # Installation
 
 Using PlatformIO:

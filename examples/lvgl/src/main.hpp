@@ -10,11 +10,6 @@ extern "C" {
     #endif
 }
 
-/* ---------------- CONTROL PINS ---------------- */
-
-
-
-
 /* ---------------- I80 DATA PINS ---------------- */
 
 #define LCD_DC          GPIO_NUM_NC
@@ -51,3 +46,8 @@ extern "C" {
 #define LCD_I2C_SDA     GPIO_NUM_NC
 #define LCD_I2C_SCL     GPIO_NUM_NC
 #define LCD_I2C_ADDR    0x3C
+
+static inline uint32_t my_get_millis(void)
+{
+    return (uint32_t)(esp_timer_get_time() / 1000u);
+}

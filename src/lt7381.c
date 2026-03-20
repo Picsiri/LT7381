@@ -265,7 +265,7 @@ static esp_err_t panel_lt7381_reset(esp_lcd_panel_t *panel)
   if (lt7381->reset_gpio_num != GPIO_NUM_NC)
   {
     /* perform hardware reset */
-    ESP_LOGE(PRINT_TAG, "Performing HW reset");
+    ESP_LOGI(PRINT_TAG, "Performing HW reset");
     gpio_set_level(lt7381->reset_gpio_num, lt7381->reset_level);
     vTaskDelay(pdMS_TO_TICKS(100));
     gpio_set_level(lt7381->reset_gpio_num, !lt7381->reset_level);
@@ -274,7 +274,7 @@ static esp_err_t panel_lt7381_reset(esp_lcd_panel_t *panel)
   else
   {
     /* perform software reset */
-    ESP_LOGE(PRINT_TAG, "Performing SW reset");
+    ESP_LOGI(PRINT_TAG, "Performing SW reset");
     esp_lcd_panel_io_tx_param(io_handle, LT7381_REGISTER_SRR, (uint8_t[]){ 0x01 }, 1u);
     vTaskDelay(pdMS_TO_TICKS(20));
   }
@@ -288,7 +288,7 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   esp_err_t       ret = ESP_OK;
   uint8_t status;
 
-  ESP_LOGE(PRINT_TAG, "initing started");
+  ESP_LOGI(PRINT_TAG, "initing started");
   
   // TODO: wrapp all calls on error handler
   ESP_GOTO_ON_ERROR(lt7381_system_wait_ready(lt7381), err, PRINT_TAG, "Panel failed to settle in time. Display unavailable.");
@@ -299,7 +299,6 @@ static esp_err_t panel_lt7381_init(esp_lcd_panel_t *panel)
   do
   {
     lt7381_status_read(lt7381, &status);
-    ESP_LOGE(PRINT_TAG, "Panel status is %d", status);
     if (GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) > 0u)
     {
       vTaskDelay(pdMS_TO_TICKS(100));

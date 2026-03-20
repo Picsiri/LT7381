@@ -13,14 +13,14 @@
 
 /* display size */
 
-#define LT7381_LCD_WIDTH                800
-#define LT7381_LCD_HEIGHT               480
-#define LT7381_LCD_HORIZONTAL_NON_DISP  140
-#define LT7381_LCD_HSYNC_START_POS      160
-#define LT7381_LCD_HSYNC_PULSE_WIDTH    20
-#define LT7381_LCD_VERTICAL_NON_DISP    20
-#define LT7381_LCD_VSYNC_START_POS      12
-#define LT7381_LCD_VSYNC_PULSE_WIDTH    3
+#define LT7381_LCD_WIDTH                800u
+#define LT7381_LCD_HEIGHT               480u
+#define LT7381_LCD_HORIZONTAL_NON_DISP  140u
+#define LT7381_LCD_HSYNC_START_POS      160u
+#define LT7381_LCD_HSYNC_PULSE_WIDTH    20u
+#define LT7381_LCD_VERTICAL_NON_DISP    20u
+#define LT7381_LCD_VSYNC_START_POS      12u
+#define LT7381_LCD_VSYNC_PULSE_WIDTH    3u
 
 /* backlight */
 
@@ -80,7 +80,7 @@
 #define LT7381_SDRMD_DEFAULT            0x03 /* CAS:2=0x02 ACAS:3=0x03 */
 
 #define LT7381_SDRAM_REFRESH_TIME       0x01E6 /* comes from vendor example, more might be possible */
-#define LT7381_SDRAM_BYTE_PER_PIXEL     3u
+#define LT7381_SDRAM_BYTE_PER_PIXEL     2u
 #define LT7381_SDRAM_LAYER_STEP         LT7381_SDRAM_BYTE_PER_PIXEL * LT7381_LCD_WIDTH * LT7381_LCD_HEIGHT
 #define LT7381_SDRAM_LAYER_0            0u
 #define LT7381_SDRAM_LAYER_1            LT7381_SDRAM_LAYER_0 + LT7381_SDRAM_LAYER_STEP

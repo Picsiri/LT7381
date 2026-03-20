@@ -114,8 +114,6 @@ esp_err_t lt7381_status_read(lt7381_panel_t *lt, uint8_t *status)
 esp_err_t lt7381_reg_write(lt7381_panel_t *lt, uint8_t reg, uint8_t val)
 {
   esp_err_t ret;
-  
-  ESP_LOGE(PRINT_TAG, "writing to %d val %d", reg, val);
 
   ret = lt7381_cmd_write(lt, reg);
   if (ret != ESP_OK) return ret;
@@ -146,17 +144,16 @@ esp_err_t lt7381_system_wait_ready(lt7381_panel_t *lt)
   while (1)
   {
     ret |= lt7381_status_read(lt, &status);
-    ESP_LOGE(PRINT_TAG, "Status is %d", status);
 
     if (GET_BIT(status, STAT_REG_INHIBIT_OPERATION_BIT) == 0u)
     {
+      ESP_LOGI(PRINT_TAG, "Status is %d", status);
       /* one might think lt7381_reg_read() can be used but these commands are slow and take time, delays are needed */
       vTaskDelay(pdMS_TO_TICKS(2));
       ret |= lt7381_cmd_write(lt, LT7381_REGISTER_CCR);
       vTaskDelay(pdMS_TO_TICKS(2));
       ret |= lt7381_data_read(lt, &ccr);
-
-      ESP_LOGE(PRINT_TAG, "CCR is %d", ccr);
+      ESP_LOGI(PRINT_TAG, "CCR is %d", ccr);
 
       if (GET_BIT(ccr, CCR_REG_PLL_READY_BIT) > 0u)
       {
@@ -172,6 +169,7 @@ esp_err_t lt7381_system_wait_ready(lt7381_panel_t *lt)
     }
     else
     {
+      ESP_LOGE(PRINT_TAG, "Status is %d", status);
       retry++;
 
       if (retry >= LT7381_RETRY_LIMIT_RESET)
@@ -328,7 +326,6 @@ esp_err_t lt7381_wait_sdram_ready(lt7381_panel_t *lt)
   }
   while (GET_BIT(status, STAT_REG_DISPLAY_RAM_READY_BIT) == 0u);
 
-  ESP_LOGE(PRINT_TAG, "lt7381_wait_sdram ready!");
   return ESP_OK;
 }
 
@@ -413,12 +410,9 @@ esp_err_t lt7381_tft_panel_setting(lt7381_panel_t *lt, uint8_t setting)
     SET_BIT(regdata, CCR_REG_PANEL_IF_SETTING_HIGH);
   }
 
-  ESP_LOGE(PRINT_TAG, "writing CCR %d", regdata);
-
   ret |= lt7381_data_write(lt, regdata);
 
   lt7381_data_read(lt, &regdata);
-  ESP_LOGE(PRINT_TAG, "read CCR %d", regdata);
 
   return ret;
 }
@@ -439,7 +433,6 @@ esp_err_t lt7381_bus_width_setting(lt7381_panel_t *lt, uint8_t setting)
     SET_BIT(regdata, CCR_REG_BUS_WIDTH_SELECT_BIT);
   }
 
-  ESP_LOGE(PRINT_TAG, "writing CCR as %d", regdata);
   ret |= lt7381_data_write(lt, regdata);
 
   return ret;
